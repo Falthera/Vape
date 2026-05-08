@@ -5,7 +5,7 @@ import dev.falthera.vape.anchor.AnchorContext;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockHitResult;
+import net.minecraft.util.hit.BlockHitResult;
 
 public final class IntentResolver {
     private final FaltheraVapeConfig config;

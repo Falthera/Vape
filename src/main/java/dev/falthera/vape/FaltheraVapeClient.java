@@ -8,10 +8,7 @@ import dev.falthera.vape.render.AnchorHudOverlay;
 import dev.falthera.vape.intent.IntentResolver;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,19 +26,10 @@ public final class FaltheraVapeClient implements ClientModInitializer {
     private final ClientTickCoordinator clientTickCoordinator = new ClientTickCoordinator(config, anchorContextManager, packetGuard);
     private final AnchorHudOverlay hudOverlay = new AnchorHudOverlay(config, anchorContextManager, intentResolver);
 
-    private KeyBinding toggleAssistKey;
-
     @Override
     public void onInitializeClient() {
         instance = this;
-        toggleAssistKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-            "key.falthera-vape.toggle_assist",
-            InputUtil.Type.KEYSYM,
-            GLFW.GLFW_KEY_F8,
-            "category.falthera-vape"
-        ));
-
-        ClientTickEvents.END_CLIENT_TICK.register(client -> clientTickCoordinator.tick(client, toggleAssistKey));
+        ClientTickEvents.END_CLIENT_TICK.register(client -> clientTickCoordinator.tick(client));
         HudRenderCallback.EVENT.register((drawContext, tickCounter) -> hudOverlay.render(drawContext));
 
         LOGGER.info("Falthera VAPE client initialized");

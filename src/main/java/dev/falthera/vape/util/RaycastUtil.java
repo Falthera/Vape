@@ -1,10 +1,10 @@
 package dev.falthera.vape.util;
 
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.util.math.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.hit.BlockHitResult;
 
 public final class RaycastUtil {
     private RaycastUtil() {
