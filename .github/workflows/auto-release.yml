@@ -25,17 +25,18 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: "8.8"
+          gradle-version: "9.4"
+          cache-disabled: true
 
       - name: Build jar
-        run: gradle build --stacktrace --info --warning-mode all
+        run: gradle build --stacktrace --warning-mode all
 
       - name: Find jar
         id: jar
         run: |
           JAR="$(find build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*-sources.jar' | head -n 1)"
           if [ -z "$JAR" ]; then
-            echo "No jar produced in build/libs"
+            echo "No jar in build/libs"
             ls -la build/libs || true
             exit 1
           fi
