@@ -12,7 +12,43 @@ def requiredProp = { String name ->
 }
 
 group = requiredProp("maven_group")
-version = requiredProp("mod_version")
+
+// Autoversioning: derive a release-looking `project.version` from git tags.
+// If HEAD is exactly tagged (e.g. v1.2.3) we use that tag (stripping leading `v`).
+// Otherwise we take the latest tag, bump the patch, and keep that as the
+// project.version so non-tag builds are not marked as pre-release. The
+// artifact filename will include the short commit hash to keep builds unique.
+version = {
+    def gitOutput = { List args ->
+        def out = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', *args
+            standardOutput = out
+            ignoreExitValue = true
+        }
+        return out.toString().trim()
+    }
+
+    def modVersionProp = project.findProperty('mod_version')
+
+    // If this commit is exactly tagged, use that tag as the version
+    def exactTag = gitOutput(['describe', '--tags', '--exact-match'])
+    if (exactTag) {
+        return exactTag.replaceAll(/^v/, '')
+    }
+
+    // Otherwise, try the latest tag; if none, fall back to mod_version or 0.1.0
+    def latestTag = gitOutput(['describe', '--tags', '--abbrev=0'])
+    def baseVersion = latestTag ? latestTag.replaceAll(/^v/, '') : (modVersionProp ?: '0.1.0')
+
+    def parts = baseVersion.tokenize('.')
+    while (parts.size() < 3) { parts << '0' }
+    def major = parts[0].toInteger()
+    def minor = parts[1].toInteger()
+    def patch = parts[2].toInteger() + 1
+
+    return "${major}.${minor}.${patch}"
+}.call()
 
 base {
     archivesName = requiredProp("archives_base_name")
@@ -62,6 +98,26 @@ processResources {
             "fabric_api_version": requiredProp("fabric_api_version")
         )
     }
+}
+
+// Include commit short hash in artifact filename so non-tag builds remain unique
+def computeGitShort = {
+    def out = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'rev-parse', '--short', 'HEAD'
+        standardOutput = out
+        ignoreExitValue = true
+    }
+    return out.toString().trim() ?: 'nogit'
+}
+
+def commitShort = computeGitShort()
+
+tasks.withType(Jar).configureEach {
+    def baseName = requiredProp("archives_base_name")
+    archiveBaseName.set(baseName)
+    archiveVersion.set(project.version.toString())
+    archiveFileName.set("${baseName}-${project.version}-${commitShort}.jar")
 }
 
 publishing {
