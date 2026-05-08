@@ -1,0 +1,67 @@
+plugins {
+    id "fabric-loom"
+    id "maven-publish"
+}
+
+def props = new Properties()
+file("gradle.properties").withInputStream { input ->
+    props.load(input)
+}
+
+group = props.getProperty("maven_group")
+version = props.getProperty("mod_version")
+
+base {
+    archivesName = props.getProperty("archives_base_name")
+}
+
+repositories {
+    maven {
+        url = uri("https://maven.fabricmc.net/")
+    }
+    mavenCentral()
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${props.getProperty('minecraft_version')}"
+    mappings "net.fabricmc:yarn:${props.getProperty('yarn_mappings')}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${props.getProperty('loader_version')}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${props.getProperty('fabric_api_version')}"
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(Integer.parseInt(props.getProperty("java_version")))
+    }
+    withSourcesJar()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = "UTF-8"
+    options.release = Integer.parseInt(props.getProperty("java_version"))
+}
+
+processResources {
+    inputs.property "version", project.version
+    inputs.property "minecraft_version", props.getProperty("minecraft_version")
+    inputs.property "loader_version", props.getProperty("loader_version")
+    inputs.property "fabric_api_version", props.getProperty("fabric_api_version")
+
+    filesMatching("fabric.mod.json") {
+        expand(
+            "version": project.version,
+            "minecraft_version": props.getProperty("minecraft_version"),
+            "loader_version": props.getProperty("loader_version"),
+            "fabric_api_version": props.getProperty("fabric_api_version")
+        )
+    }
+}
+
+publishing {
+    publications {
+        create("mavenJava", MavenPublication) {
+            artifactId = props.getProperty("archives_base_name")
+            from components.java
+        }
+    }
+}

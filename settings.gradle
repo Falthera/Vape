@@ -1,0 +1,23 @@
+pluginManagement {
+    repositories {
+        maven {
+            url = uri("https://maven.fabricmc.net/")
+        }
+        gradlePluginPortal()
+        mavenCentral()
+    }
+
+    def props = new Properties()
+    def propsFile = file("gradle.properties")
+    if (propsFile.exists()) {
+        propsFile.withInputStream { input ->
+            props.load(input)
+        }
+    }
+
+    plugins {
+        id("fabric-loom") version (props.getProperty("fabric_loom_version") ?: "0.0.0")
+    }
+}
+
+rootProject.name = "falthera-vape"

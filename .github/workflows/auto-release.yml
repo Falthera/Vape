@@ -1,0 +1,52 @@
+name: Auto Release
+
+on:
+  push:
+    branches:
+      - "**"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      - name: Make Gradle launcher executable
+        run: chmod +x ./gradlew
+
+      - name: Build jar
+        run: ./gradlew build
+
+      - name: Find jar
+        id: jar
+        run: echo "path=$(find build/libs -maxdepth 1 -type f -name '*.jar' | head -n 1)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: falthera-vape-${{ github.sha }}
+          path: ${{ steps.jar.outputs.path }}
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "build-${GITHUB_SHA}" "${{ steps.jar.outputs.path }}" \
+            --title "Falthera VAPE ${GITHUB_SHA}" \
+            --notes "Automated release for commit ${GITHUB_SHA}" \
+            --prerelease \
+            --target "${GITHUB_SHA}"
