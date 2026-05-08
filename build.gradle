@@ -20,13 +20,17 @@ group = requiredProp("maven_group")
 // artifact filename will include the short commit hash to keep builds unique.
 version = {
     def gitOutput = { List args ->
-        def out = new ByteArrayOutputStream()
-        project.exec {
-            commandLine 'git', *args
-            standardOutput = out
-            ignoreExitValue = true
+        try {
+            def sout = new StringBuilder()
+            def serr = new StringBuilder()
+            def cmd = (['git'] + args)
+            def proc = cmd.execute()
+            proc.consumeProcessOutput(sout, serr)
+            proc.waitForOrKill(10000)
+            return sout.toString().trim()
+        } catch (Exception e) {
+            return ''
         }
-        return out.toString().trim()
     }
 
     def modVersionProp = project.findProperty('mod_version')
@@ -102,13 +106,17 @@ processResources {
 
 // Include commit short hash in artifact filename so non-tag builds remain unique
 def computeGitShort = {
-    def out = new ByteArrayOutputStream()
-    project.exec {
-        commandLine 'git', 'rev-parse', '--short', 'HEAD'
-        standardOutput = out
-        ignoreExitValue = true
+    try {
+        def sout = new StringBuilder()
+        def serr = new StringBuilder()
+        def proc = (['git', 'rev-parse', '--short', 'HEAD']).execute()
+        proc.consumeProcessOutput(sout, serr)
+        proc.waitForOrKill(10000)
+        def res = sout.toString().trim()
+        return res ?: 'nogit'
+    } catch (Exception e) {
+        return 'nogit'
     }
-    return out.toString().trim() ?: 'nogit'
 }
 
 def commitShort = computeGitShort()
