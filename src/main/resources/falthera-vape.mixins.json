@@ -1,12 +1,13 @@
 {
   "required": true,
-  "minVersion": "0.8",
+  "minVersion": "0.8.5",
   "package": "dev.falthera.vape.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
     "ClientPlayerInteractionManagerMixin"
   ],
   "injectors": {
-    "defaultRequire": 1
+    "defaultRequire": 1,
+    "maxShiftBy": 1
   }
 }
