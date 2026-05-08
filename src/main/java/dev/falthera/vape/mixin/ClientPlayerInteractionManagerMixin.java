@@ -36,21 +36,6 @@ public abstract class ClientPlayerInteractionManagerMixin {
         }
     }
 
-    @Inject(method = "interactItem", at = @At("HEAD"), cancellable = true)
-    private void faltheraVape$redirectItemUse(Hand hand, CallbackInfoReturnable<ActionResult> cir) {
-        FaltheraVapeClient runtime = FaltheraVapeClient.getInstance();
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (runtime == null || client.world == null || client.player == null) {
-            return;
-        }
-
-        RouteOutcome outcome = runtime.interactionRouter().routeItemUse(client, (ClientPlayerInteractionManager) (Object) this, client.player, hand);
-        if (outcome.handled()) {
-            cir.setReturnValue(outcome.result());
-            cir.cancel();
-        }
-    }
-
     @Inject(method = "interactBlock", at = @At("RETURN"))
     private void faltheraVape$trackAnchorPlacement(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir) {
         FaltheraVapeClient runtime = FaltheraVapeClient.getInstance();
