@@ -59,12 +59,8 @@ base {
 }
 
 loom {
-    // Enable split source sets for client/common separation
-    splitEnvironmentSourceSets()
-    
-    // Support for native libraries on ARM64 and x86_64
-    // This ensures proper launchwrapper and other native dependencies
-    log4jConfigs.from(files("src/client/resources/log4j.xml", "src/server/resources/log4j.xml"))
+    // All code is client-side; no need for environment splitting.
+    // Client-side Minecraft/Fabric classes will be available automatically.
 }
 
 def javaVer = Integer.parseInt(requiredProp("java_version"))
