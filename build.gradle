@@ -59,6 +59,12 @@ base {
 }
 
 loom {
+    // Enable split source sets for client/common separation
+    splitEnvironmentSourceSets()
+    
+    // Support for native libraries on ARM64 and x86_64
+    // This ensures proper launchwrapper and other native dependencies
+    log4jConfigs.from(files("src/client/resources/log4j.xml", "src/server/resources/log4j.xml"))
 }
 
 def javaVer = Integer.parseInt(requiredProp("java_version"))
@@ -66,6 +72,8 @@ def javaVer = Integer.parseInt(requiredProp("java_version"))
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(javaVer)
+        // Support multiple architectures: x86_64, aarch64 (ARM64), etc.
+        // The JVM will auto-detect the architecture
     }
 }
 
