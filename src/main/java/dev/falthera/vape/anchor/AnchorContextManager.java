@@ -55,7 +55,8 @@ public final class AnchorContextManager {
             return;
         }
 
-        if (activeContext.isExpired(tick, config.contextWindowTicks())) {
+        int window = config.fastMode() ? config.fastModeContextWindowTicks() : config.contextWindowTicks();
+        if (activeContext.isExpired(tick, window)) {
             clear();
             return;
         }
@@ -63,7 +64,7 @@ public final class AnchorContextManager {
         if (BlockStateChecks.isRespawnAnchor(world.getBlockState(activeContext.anchorPos()))) {
             activeContext.setConfirmed(true);
             activeContext.touch(tick);
-        } else if (tick - activeContext.createdTick() > 2L) {
+        } else if (tick - activeContext.createdTick() > (config.fastMode() ? config.fastModeContextWindowTicks() : 2L)) {
             clear();
         } else {
             activeContext.decay(0.03f);

@@ -28,6 +28,14 @@ public abstract class ClientPlayerInteractionManagerMixin {
             return;
         }
 
+        if (!runtime.config().assistEnabled()) {
+            return;
+        }
+
+        if (runtime.packetGuard().isSyntheticDispatchActive()) {
+            return;
+        }
+
         InteractionRouter router = runtime.interactionRouter();
         RouteOutcome outcome = router.routeBlockUse(client, (ClientPlayerInteractionManager) (Object) this, player, hand, hitResult);
         if (outcome.handled()) {

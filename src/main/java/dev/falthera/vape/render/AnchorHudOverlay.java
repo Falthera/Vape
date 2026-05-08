@@ -25,7 +25,11 @@ public final class AnchorHudOverlay {
         }
 
         MinecraftClient client = MinecraftClient.getInstance();
-        if (client.player == null || client.world == null || !anchorContextManager.isAssistEligible()) {
+        if (client.player == null || !anchorContextManager.isAssistEligible()) {
+            return;
+        }
+
+        if (!config.hudInstantRender() && client.world == null) {
             return;
         }
 

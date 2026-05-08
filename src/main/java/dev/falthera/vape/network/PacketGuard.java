@@ -1,19 +1,28 @@
 package dev.falthera.vape.network;
 
+import dev.falthera.vape.FaltheraVapeConfig;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.Hand;
 
 public final class PacketGuard {
+    private final FaltheraVapeConfig config;
+
     private boolean syntheticDispatchActive;
     private BlockPos lastDispatchPos;
     private Hand lastDispatchHand;
     private long lastDispatchTick = Long.MIN_VALUE;
 
+    public PacketGuard(FaltheraVapeConfig config) {
+        this.config = config;
+    }
+
     public boolean beginSyntheticDispatch(BlockPos pos, Hand hand, long tick) {
         if (syntheticDispatchActive) {
             return false;
         }
-        if (lastDispatchPos != null && lastDispatchHand == hand && lastDispatchTick == tick && lastDispatchPos.equals(pos)) {
+
+        long throttle = config.fastMode() ? config.fastModePacketThrottleTicks() : 2L;
+        if (lastDispatchPos != null && lastDispatchHand == hand && lastDispatchPos.equals(pos) && tick - lastDispatchTick <= throttle) {
             return false;
         }
 
@@ -33,7 +42,8 @@ public final class PacketGuard {
     }
 
     public void tick(long tick) {
-        if (!syntheticDispatchActive && tick - lastDispatchTick > 2L) {
+        long throttle = config.fastMode() ? config.fastModePacketThrottleTicks() : 2L;
+        if (!syntheticDispatchActive && tick - lastDispatchTick > throttle) {
             lastDispatchPos = null;
             lastDispatchHand = null;
         }

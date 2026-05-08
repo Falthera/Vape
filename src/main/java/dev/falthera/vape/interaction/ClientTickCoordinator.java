@@ -25,6 +25,10 @@ public final class ClientTickCoordinator {
     }
 
     public void tick(MinecraftClient client) {
+        long startNanos = 0L;
+        if (config.debugEnabled() && config.fastMode()) {
+            startNanos = System.nanoTime();
+        }
         if (client.getWindow() != null) {
             boolean togglePressed = GLFW.glfwGetKey(client.getWindow().getHandle(), GLFW.GLFW_KEY_F8) == GLFW.GLFW_PRESS;
             if (togglePressed && !wasTogglePressed) {
@@ -63,5 +67,10 @@ public final class ClientTickCoordinator {
 
         anchorContextManager.tick(client.world, client.player, tick);
         packetGuard.tick(tick);
+
+        if (config.debugEnabled() && config.fastMode()) {
+            long elapsedMs = (System.nanoTime() - startNanos) / 1_000_000L;
+            FaltheraVapeClient.LOGGER.info("[fastMode][tick] tick={} durationMs={} worldPresent={} playerPresent={} assistEnabled={}", tick, elapsedMs, client.world != null, client.player != null, config.assistEnabled());
+        }
     }
 }

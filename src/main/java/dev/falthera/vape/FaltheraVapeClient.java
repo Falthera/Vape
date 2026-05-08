@@ -20,7 +20,7 @@ public final class FaltheraVapeClient implements ClientModInitializer {
 
     private final FaltheraVapeConfig config = new FaltheraVapeConfig();
     private final AnchorContextManager anchorContextManager = new AnchorContextManager(config);
-    private final PacketGuard packetGuard = new PacketGuard();
+    private final PacketGuard packetGuard = new PacketGuard(config);
     private final IntentResolver intentResolver = new IntentResolver(config);
     private final InteractionRouter interactionRouter = new InteractionRouter(config, anchorContextManager, intentResolver, packetGuard);
     private final ClientTickCoordinator clientTickCoordinator = new ClientTickCoordinator(config, anchorContextManager, packetGuard);

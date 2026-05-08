@@ -44,7 +44,10 @@ public final class InteractionRouter {
         AnchorContext context = anchorContextManager.activeContext();
         IntentDecision decision = intentResolver.resolve(player, world, player.getStackInHand(hand), hitResult, context, world.getTime());
         if (decision.level() != ConfidenceLevel.HIGH) {
-            return RouteOutcome.passThrough();
+            // In fast mode, accept MEDIUM confidence for quicker decisions
+            if (!(config.fastMode() && decision.level() == ConfidenceLevel.MEDIUM)) {
+                return RouteOutcome.passThrough();
+            }
         }
 
         if (context == null || !BlockStateChecks.isRespawnAnchor(world.getBlockState(context.anchorPos()))) {
@@ -75,7 +78,9 @@ public final class InteractionRouter {
 
         IntentDecision decision = intentResolver.resolve(player, world, player.getStackInHand(hand), null, context, world.getTime());
         if (decision.level() != ConfidenceLevel.HIGH) {
-            return RouteOutcome.passThrough();
+            if (!(config.fastMode() && decision.level() == ConfidenceLevel.MEDIUM)) {
+                return RouteOutcome.passThrough();
+            }
         }
 
         if (!BlockStateChecks.isRespawnAnchor(world.getBlockState(context.anchorPos()))) {
@@ -88,6 +93,10 @@ public final class InteractionRouter {
     private RouteOutcome performSyntheticUse(ClientPlayerInteractionManager interactionManager, ClientPlayerEntity player, Hand hand, BlockPos targetPos, long tick, String reason) {
         if (!packetGuard.beginSyntheticDispatch(targetPos, hand, tick)) {
             return RouteOutcome.passThrough();
+        }
+
+        if (config.debugEnabled() && config.fastMode()) {
+            dev.falthera.vape.FaltheraVapeClient.LOGGER.info("[fastMode] performSyntheticUse reason={} target={} tick={}", reason, targetPos, tick);
         }
 
         try {
