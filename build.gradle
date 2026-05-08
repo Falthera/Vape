@@ -27,6 +27,8 @@ dependencies {
     mappings "net.fabricmc:yarn:${props.getProperty('yarn_mappings')}:v2"
     modImplementation "net.fabricmc:fabric-loader:${props.getProperty('loader_version')}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${props.getProperty('fabric_api_version')}"
+    
+    annotationProcessor "net.fabricmc:sponge-mixin:0.14.2+mixin.0.8.7"
 }
 
 java {
