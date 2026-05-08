@@ -23,8 +23,18 @@ public final class IntentResolver {
             return IntentDecision.low("no-context");
         }
 
-        if (!stack.isOf(net.minecraft.item.Items.GLOWSTONE)) {
-            return IntentDecision.low("not-glowstone");
+        boolean holdingGlowstone = stack.isOf(net.minecraft.item.Items.GLOWSTONE);
+        if (!context.glowstoneObserved()) {
+            if (!holdingGlowstone) {
+                return IntentDecision.low("waiting-glowstone-charge");
+            }
+        } else {
+            if (holdingGlowstone) {
+                return IntentDecision.low("waiting-swap-off-glowstone");
+            }
+            if (!context.swappedOffGlowstoneObserved()) {
+                return IntentDecision.low("swap-off-glowstone-not-observed");
+            }
         }
 
         float score = context.confidence();
@@ -34,8 +44,15 @@ public final class IntentResolver {
         if (context.glowstoneObserved()) {
             score += 0.15f;
         }
+        if (context.swappedOffGlowstoneObserved()) {
+            score += 0.20f;
+        }
         if (context.isRecent(tick, config.contextWindowTicks())) {
             score += 0.10f;
+        }
+
+        if (!holdingGlowstone && context.glowstoneObserved()) {
+            score += 0.30f;
         }
 
         if (hitResult != null) {
@@ -64,6 +81,9 @@ public final class IntentResolver {
 
     private static String buildReason(ConfidenceLevel level, BlockHitResult hitResult, AnchorContext context) {
         if (level == ConfidenceLevel.HIGH) {
+            if (context.swappedOffGlowstoneObserved()) {
+                return "charged-anchor-swap-confirmed";
+            }
             return hitResult == null ? "confirmed-anchor-context" : "anchor-hit-confirmed";
         }
         if (context.confirmed()) {

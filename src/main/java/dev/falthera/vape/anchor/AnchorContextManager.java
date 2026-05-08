@@ -42,7 +42,16 @@ public final class AnchorContextManager {
             return;
         }
 
-        clear();
+        if (!activeContext.glowstoneObserved()) {
+            clear();
+            return;
+        }
+
+        if (previousItem == Items.GLOWSTONE && currentItem != Items.GLOWSTONE) {
+            activeContext.setSwappedOffGlowstoneObserved(true);
+        }
+
+        activeContext.addConfidence(0.08f);
     }
 
     public void tick(ClientWorld world, ClientPlayerEntity player, long tick) {

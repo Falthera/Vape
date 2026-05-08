@@ -9,6 +9,7 @@ public final class AnchorContext {
     private float confidence;
     private boolean confirmed;
     private boolean glowstoneObserved;
+    private boolean swappedOffGlowstoneObserved;
 
     public AnchorContext(BlockPos anchorPos, long createdTick) {
         this.anchorPos = anchorPos.toImmutable();
@@ -59,6 +60,17 @@ public final class AnchorContext {
     public void setGlowstoneObserved(boolean glowstoneObserved) {
         this.glowstoneObserved = glowstoneObserved;
         if (glowstoneObserved) {
+            addConfidence(0.20f);
+        }
+    }
+
+    public boolean swappedOffGlowstoneObserved() {
+        return swappedOffGlowstoneObserved;
+    }
+
+    public void setSwappedOffGlowstoneObserved(boolean swappedOffGlowstoneObserved) {
+        this.swappedOffGlowstoneObserved = swappedOffGlowstoneObserved;
+        if (swappedOffGlowstoneObserved) {
             addConfidence(0.20f);
         }
     }
