@@ -1,5 +1,5 @@
 plugins {
-    id "fabric-loom"
+    id "fabric-loom" version "1.17.0-alpha.8"
     id "maven-publish"
 }
 
@@ -29,7 +29,7 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${props.getProperty('fabric_api_version')}"
     
     // Use a released sponge-mixin artifact that exists on FabricMC's Maven
-    annotationProcessor "net.fabricmc:sponge-mixin:0.17.3+mixin.0.8.7"
+    annotationProcessor "net.fabricmc:sponge-mixin:0.18+mixin.0.8.7"
 }
 
 java {
