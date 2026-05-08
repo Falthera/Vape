@@ -20,7 +20,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ClientPlayerInteractionManager.class)
 public abstract class ClientPlayerInteractionManagerMixin {
-    @Inject(method = "interactBlock", at = @At("HEAD"), cancellable = true, remap = false)
+
+    @Inject(method = "interactBlock", at = @At("HEAD"), cancellable = true)
     private void faltheraVape$redirectBlockUse(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir) {
         FaltheraVapeClient runtime = FaltheraVapeClient.getInstance();
         MinecraftClient client = MinecraftClient.getInstance();
@@ -36,7 +37,7 @@ public abstract class ClientPlayerInteractionManagerMixin {
         }
     }
 
-    @Inject(method = "interactItem", at = @At("HEAD"), cancellable = true, remap = false)
+    @Inject(method = "interactItem", at = @At("HEAD"), cancellable = true)
     private void faltheraVape$redirectItemUse(ClientPlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
         FaltheraVapeClient runtime = FaltheraVapeClient.getInstance();
         MinecraftClient client = MinecraftClient.getInstance();
@@ -51,7 +52,7 @@ public abstract class ClientPlayerInteractionManagerMixin {
         }
     }
 
-    @Inject(method = "interactBlock", at = @At("RETURN"), remap = false)
+    @Inject(method = "interactBlock", at = @At("RETURN"))
     private void faltheraVape$trackAnchorPlacement(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir) {
         FaltheraVapeClient runtime = FaltheraVapeClient.getInstance();
         MinecraftClient client = MinecraftClient.getInstance();
@@ -70,8 +71,7 @@ public abstract class ClientPlayerInteractionManagerMixin {
 
         BlockPos placedPos = hitResult.getBlockPos().offset(hitResult.getSide());
         if (BlockStateChecks.isRespawnAnchor(client.world.getBlockState(placedPos))) {
-            AnchorContextManager contextManager = runtime.anchorContextManager();
-            contextManager.recordPlacementCandidate(placedPos, client.world.getTime());
+            runtime.anchorContextManager().recordPlacementCandidate(placedPos, client.world.getTime());
         }
     }
 }
