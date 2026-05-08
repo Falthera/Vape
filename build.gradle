@@ -18,12 +18,6 @@ base {
     archivesName = requiredProp("archives_base_name")
 }
 
-loom {
-    mixin {
-        useLegacyMixinGroup = false
-    }
-}
-
 def javaVer = Integer.parseInt(requiredProp("java_version"))
 
 java {
