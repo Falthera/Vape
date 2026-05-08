@@ -1,6 +1,7 @@
 package dev.falthera.vape.interaction;
 
 import dev.falthera.vape.FaltheraVapeConfig;
+import dev.falthera.vape.FaltheraVapeClient;
 import dev.falthera.vape.anchor.AnchorContextManager;
 import dev.falthera.vape.network.PacketGuard;
 import net.minecraft.client.MinecraftClient;
