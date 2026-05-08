@@ -20,7 +20,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ClientPlayerInteractionManager.class)
 public abstract class ClientPlayerInteractionManagerMixin {
-    @Inject(method = "interactBlock", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "interactBlock", at = @At("HEAD"), cancellable = true, remap = false)
     private void faltheraVape$redirectBlockUse(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir) {
         FaltheraVapeClient runtime = FaltheraVapeClient.getInstance();
         MinecraftClient client = MinecraftClient.getInstance();
@@ -36,7 +36,7 @@ public abstract class ClientPlayerInteractionManagerMixin {
         }
     }
 
-    @Inject(method = "interactItem", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "interactItem", at = @At("HEAD"), cancellable = true, remap = false)
     private void faltheraVape$redirectItemUse(ClientPlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
         FaltheraVapeClient runtime = FaltheraVapeClient.getInstance();
         MinecraftClient client = MinecraftClient.getInstance();
@@ -51,7 +51,7 @@ public abstract class ClientPlayerInteractionManagerMixin {
         }
     }
 
-    @Inject(method = "interactBlock", at = @At("RETURN"))
+    @Inject(method = "interactBlock", at = @At("RETURN"), remap = false)
     private void faltheraVape$trackAnchorPlacement(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir) {
         FaltheraVapeClient runtime = FaltheraVapeClient.getInstance();
         MinecraftClient client = MinecraftClient.getInstance();
