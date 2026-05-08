@@ -1,16 +1,20 @@
 package dev.falthera.vape;
 
 public final class FaltheraVapeConfig {
+    // Keep assist enabled by default; make fast-mode permanently enabled
     private boolean assistEnabled = true;
     private boolean hudEnabled = false;
     private boolean debugEnabled = false;
     private int contextWindowTicks = 1;
     private float highConfidenceThreshold = 0.78f;
     private float mediumConfidenceThreshold = 0.45f;
-    private boolean fastMode = false;
-    private int fastModePacketThrottleTicks = 1;
-    private int fastModeContextWindowTicks = 1;
-    private boolean hudInstantRender = false;
+    // fastMode is now always true to enable lowest-latency code paths
+    private final boolean fastMode = true;
+    // zero/very-small throttle values to allow immediate synthetic dispatches
+    private final int fastModePacketThrottleTicks = 0;
+    private final int fastModeContextWindowTicks = 0;
+    // enable instant HUD rendering when fast mode is active
+    private final boolean hudInstantRender = true;
 
     public boolean assistEnabled() {
         return assistEnabled;
@@ -41,11 +45,11 @@ public final class FaltheraVapeConfig {
     }
 
     public boolean fastMode() {
-        return fastMode;
+        return true;
     }
 
     public void setFastMode(boolean fastMode) {
-        this.fastMode = fastMode;
+        // no-op: fast mode is permanently enabled in this build
     }
 
     public int fastModePacketThrottleTicks() {
@@ -53,7 +57,7 @@ public final class FaltheraVapeConfig {
     }
 
     public void setFastModePacketThrottleTicks(int ticks) {
-        this.fastModePacketThrottleTicks = ticks;
+        // no-op: throttle is fixed for fast-mode
     }
 
     public int fastModeContextWindowTicks() {
@@ -61,7 +65,7 @@ public final class FaltheraVapeConfig {
     }
 
     public void setFastModeContextWindowTicks(int ticks) {
-        this.fastModeContextWindowTicks = ticks;
+        // no-op: context window is fixed for fast-mode
     }
 
     public boolean hudInstantRender() {
@@ -69,7 +73,7 @@ public final class FaltheraVapeConfig {
     }
 
     public void setHudInstantRender(boolean hudInstantRender) {
-        this.hudInstantRender = hudInstantRender;
+        // no-op: instant HUD rendering is fixed for fast-mode
     }
 
     public float highConfidenceThreshold() {
