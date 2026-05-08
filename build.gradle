@@ -21,7 +21,7 @@ group = requiredProp("maven_group")
 version = {
     def gitOutput = { List args ->
         def out = new ByteArrayOutputStream()
-        exec {
+        project.exec {
             commandLine 'git', *args
             standardOutput = out
             ignoreExitValue = true
@@ -103,7 +103,7 @@ processResources {
 // Include commit short hash in artifact filename so non-tag builds remain unique
 def computeGitShort = {
     def out = new ByteArrayOutputStream()
-    exec {
+    project.exec {
         commandLine 'git', 'rev-parse', '--short', 'HEAD'
         standardOutput = out
         ignoreExitValue = true
