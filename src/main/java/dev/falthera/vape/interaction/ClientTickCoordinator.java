@@ -52,7 +52,7 @@ public final class ClientTickCoordinator {
         }
 
         long tick = client.world.getTime();
-        int selectedSlot = client.player.getInventory().getSelectedSlot();
+        int selectedSlot = client.player.getInventory().selectedSlot;
         Item currentMainHandItem = client.player.getMainHandStack().getItem();
 
         if (selectedSlot != lastSelectedSlot || currentMainHandItem != lastMainHandItem) {
