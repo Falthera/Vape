@@ -20,17 +20,24 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "21"
+          java-version: "17"
 
       - name: Make Gradle launcher executable
         run: chmod +x ./gradlew
 
       - name: Build jar
-        run: ./gradlew build
+        run: ./gradlew build --stacktrace --info --warning-mode all
 
       - name: Find jar
         id: jar
-        run: echo "path=$(find build/libs -maxdepth 1 -type f -name '*.jar' | head -n 1)" >> "$GITHUB_OUTPUT"
+        run: |
+          JAR="$(find build/libs -maxdepth 1 -type f -name '*.jar' | head -n 1)"
+          if [ -z "$JAR" ]; then
+            echo "No jar produced in build/libs"
+            ls -la build/libs || true
+            exit 1
+          fi
+          echo "path=$JAR" >> "$GITHUB_OUTPUT"
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
