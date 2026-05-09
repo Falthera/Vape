@@ -9,6 +9,7 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import net.minecraft.block.Blocks;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -98,7 +99,7 @@ public final class ClientTickCoordinator {
             runPendingSequence(client, tick);
         }
 
-        // Fast automatic sequence: place glowstone, then switch/use totem on the anchor
+        // Fast automatic sequence: detect pattern (safe vs direct) and assist accordingly
         if (config.assistEnabled() && config.fastMode()) {
             var context = anchorContextManager.activeContext();
             if (context != null && context.confirmed() && !context.autoSequenceStarted()) {
@@ -108,29 +109,12 @@ public final class ClientTickCoordinator {
                     if (player != null && interactionManager != null && pendingStage == STAGE_NONE) {
                         int backupSlot = player.getInventory().getSelectedSlot();
 
-                        // 1) Try place glowstone if present in hotbar
-                        int glowSlot = resolvePreferredHotbarSlot(player, Items.GLOWSTONE, detectedGlowstoneSlot);
-                        if (glowSlot >= 0) {
-                            player.getInventory().setSelectedSlot(glowSlot);
-                            if (packetGuard.beginSyntheticDispatch(context.anchorPos(), Hand.MAIN_HAND, tick)) {
-                                ActionResult res = interactionManager.interactBlock(player, Hand.MAIN_HAND, RaycastUtil.anchorHitResult(player, context.anchorPos()));
-                                packetGuard.endSyntheticDispatch();
-                            }
-                        }
+                        // Detect which pattern the user is doing: check if glowstone already exists at leg positions
+                        boolean legGlowstoneDetected = hasLegGlowstone(player, client.world);
 
-                        // 2) Safe-first fast chain:
-                        // anchor -> leg glowstone (if possible) -> totem.
-                        boolean canDoSafe = countHotbarItem(player, Items.GLOWSTONE) >= 2
-                            && hasLegGlowstonePlacementCandidate(player, client.world);
-
-                        if (canDoSafe) {
-                            int safeGlowSlot = resolvePreferredHotbarSlot(player, Items.GLOWSTONE, detectedGlowstoneSlot);
-                            if (safeGlowSlot >= 0) {
-                                player.getInventory().setSelectedSlot(safeGlowSlot);
-                                tryPlaceGlowstoneNearLegs(player, interactionManager, client.world);
-                            }
-                        }
-
+                        // Try totem immediately (user will have either:
+                        // - safe: already placed leg glowstone, we just do totem
+                        // - direct: skipping leg glowstone, we just do totem)
                         boolean immediateSuccess = tryTotemUseOnAnchor(player, interactionManager, context.anchorPos(), tick);
                         player.getInventory().setSelectedSlot(backupSlot);
                         if (immediateSuccess) {
@@ -287,6 +271,20 @@ public final class ClientTickCoordinator {
         detectedAnchorSlot = -1;
         detectedGlowstoneSlot = -1;
         detectedTotemSlot = -1;
+    }
+
+    private boolean hasLegGlowstone(ClientPlayerEntity player, ClientWorld world) {
+        BlockPos base = player.getBlockPos();
+        Direction[] legOffsets = new Direction[]{Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST};
+
+        for (Direction legOffset : legOffsets) {
+            BlockPos target = base.offset(legOffset);
+            if (world.getBlockState(target).getBlock() == Blocks.GLOWSTONE) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private boolean hasLegGlowstonePlacementCandidate(ClientPlayerEntity player, ClientWorld world) {
