@@ -41,7 +41,6 @@ public final class ClientTickCoordinator {
             lastWorld = client.world;
             lastSelectedSlot = -1;
             lastMainHandItem = null;
-            wasTogglePressed = false;
             anchorContextManager.clear();
             packetGuard.clear();
             return;
