@@ -101,7 +101,7 @@ public final class ClientTickCoordinator {
         // Fast automatic sequence: place glowstone, then switch/use totem on the anchor
         if (config.assistEnabled() && config.fastMode()) {
             var context = anchorContextManager.activeContext();
-            if (context != null && context.confirmed() && !context.autoSequenceStarted() && tick - context.createdTick() >= 1L) {
+            if (context != null && context.confirmed() && !context.autoSequenceStarted()) {
                 try {
                     ClientPlayerEntity player = client.player;
                     ClientPlayerInteractionManager interactionManager = client.interactionManager;
@@ -121,26 +121,17 @@ public final class ClientTickCoordinator {
                         // 2) Support both combos:
                         // direct: anchor -> glowstone -> totem
                         // safe:   anchor -> glowstone -> leg glowstone -> totem
-                        boolean canDoSafe = countHotbarItem(player, Items.GLOWSTONE) >= 2
-                            && hasLegGlowstonePlacementCandidate(player, client.world);
-                        if (!canDoSafe) {
-                            // Direct mode: try immediate totem use once, then queue retries if needed.
-                            boolean immediateSuccess = tryTotemUseOnAnchor(player, interactionManager, context.anchorPos(), tick);
-                            player.getInventory().setSelectedSlot(backupSlot);
-                            if (immediateSuccess) {
-                                anchorContextManager.consume();
-                                context.setAutoSequenceStarted(true);
-                                clearPendingSequence();
-                            } else {
-                                pendingStage = STAGE_TOTEM;
-                                pendingAnchorPos = context.anchorPos().toImmutable();
-                                pendingActionTick = tick + 1L;
-                                pendingTotemRetries = MAX_TOTEM_RETRIES;
-                                restoreSlotAfterSequence = backupSlot;
-                                context.setAutoSequenceStarted(true);
-                            }
+                        // Always try direct totem first for max speed.
+                        boolean immediateSuccess = tryTotemUseOnAnchor(player, interactionManager, context.anchorPos(), tick);
+                        player.getInventory().setSelectedSlot(backupSlot);
+                        if (immediateSuccess) {
+                            anchorContextManager.consume();
+                            context.setAutoSequenceStarted(true);
+                            clearPendingSequence();
                         } else {
-                            pendingStage = STAGE_SAFE_GLOWSTONE;
+                            boolean canDoSafe = countHotbarItem(player, Items.GLOWSTONE) >= 2
+                                && hasLegGlowstonePlacementCandidate(player, client.world);
+                            pendingStage = canDoSafe ? STAGE_SAFE_GLOWSTONE : STAGE_TOTEM;
                             pendingAnchorPos = context.anchorPos().toImmutable();
                             pendingActionTick = tick + 1L;
                             pendingTotemRetries = MAX_TOTEM_RETRIES;

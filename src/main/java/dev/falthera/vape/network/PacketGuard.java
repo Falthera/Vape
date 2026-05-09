@@ -22,7 +22,8 @@ public final class PacketGuard {
         }
 
         long throttle = config.fastMode() ? config.fastModePacketThrottleTicks() : 2L;
-        if (lastDispatchPos != null && lastDispatchHand == hand && lastDispatchPos.equals(pos) && tick - lastDispatchTick <= throttle) {
+        // With throttle=0 (fast mode), allow same-tick chained dispatches.
+        if (lastDispatchPos != null && lastDispatchHand == hand && lastDispatchPos.equals(pos) && tick - lastDispatchTick < throttle) {
             return false;
         }
 
