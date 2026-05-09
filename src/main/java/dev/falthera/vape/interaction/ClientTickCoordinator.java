@@ -27,9 +27,9 @@ public final class ClientTickCoordinator {
     private Item lastMainHandItem = null;
     private ClientWorld lastWorld = null;
 
-    private int preferredAnchorSlot = -1;
-    private int preferredGlowstoneSlot = -1;
-    private int preferredTotemSlot = -1;
+    private int detectedAnchorSlot = -1;
+    private int detectedGlowstoneSlot = -1;
+    private int detectedTotemSlot = -1;
 
     private static final int STAGE_NONE = 0;
     private static final int STAGE_SAFE_GLOWSTONE = 1;
@@ -78,18 +78,15 @@ public final class ClientTickCoordinator {
         int selectedSlot = client.player.getInventory().getSelectedSlot();
         Item currentMainHandItem = client.player.getMainHandStack().getItem();
 
+        // Always detect live slot positions so moved items are handled instantly.
+        detectedAnchorSlot = findHotbarSlot(client.player, Items.RESPAWN_ANCHOR);
+        detectedGlowstoneSlot = findHotbarSlot(client.player, Items.GLOWSTONE);
+        detectedTotemSlot = findHotbarSlot(client.player, Items.TOTEM_OF_UNDYING);
+
         if (selectedSlot != lastSelectedSlot || currentMainHandItem != lastMainHandItem) {
             anchorContextManager.onSelectedItemChanged(lastMainHandItem, currentMainHandItem, tick);
             lastSelectedSlot = selectedSlot;
             lastMainHandItem = currentMainHandItem;
-
-            if (currentMainHandItem == Items.RESPAWN_ANCHOR) {
-                preferredAnchorSlot = selectedSlot;
-            } else if (currentMainHandItem == Items.GLOWSTONE) {
-                preferredGlowstoneSlot = selectedSlot;
-            } else if (currentMainHandItem == Items.TOTEM_OF_UNDYING) {
-                preferredTotemSlot = selectedSlot;
-            }
         }
 
         anchorContextManager.tick(client.world, client.player, tick);
@@ -110,7 +107,7 @@ public final class ClientTickCoordinator {
                         int backupSlot = player.getInventory().getSelectedSlot();
 
                         // 1) Try place glowstone if present in hotbar
-                        int glowSlot = resolvePreferredHotbarSlot(player, Items.GLOWSTONE, preferredGlowstoneSlot);
+                        int glowSlot = resolvePreferredHotbarSlot(player, Items.GLOWSTONE, detectedGlowstoneSlot);
                         if (glowSlot >= 0) {
                             player.getInventory().setSelectedSlot(glowSlot);
                             if (packetGuard.beginSyntheticDispatch(context.anchorPos(), Hand.MAIN_HAND, tick)) {
@@ -196,7 +193,7 @@ public final class ClientTickCoordinator {
 
         if (pendingStage == STAGE_SAFE_GLOWSTONE) {
             try {
-                int glowSlot = resolvePreferredHotbarSlot(player, Items.GLOWSTONE, preferredGlowstoneSlot);
+                int glowSlot = resolvePreferredHotbarSlot(player, Items.GLOWSTONE, detectedGlowstoneSlot);
                 if (glowSlot >= 0) {
                     player.getInventory().setSelectedSlot(glowSlot);
                     tryPlaceGlowstoneNearLegs(player, interactionManager, world);
@@ -218,7 +215,7 @@ public final class ClientTickCoordinator {
             if (player.getOffHandStack().getItem() == Items.TOTEM_OF_UNDYING) {
                 useHand = Hand.OFF_HAND;
             } else {
-                int totemSlot = resolvePreferredHotbarSlot(player, Items.TOTEM_OF_UNDYING, preferredTotemSlot);
+                int totemSlot = resolvePreferredHotbarSlot(player, Items.TOTEM_OF_UNDYING, detectedTotemSlot);
                 if (totemSlot >= 0) {
                     player.getInventory().setSelectedSlot(totemSlot);
                 } else {
@@ -251,9 +248,9 @@ public final class ClientTickCoordinator {
     }
 
     private void clearPreferredSlots() {
-        preferredAnchorSlot = -1;
-        preferredGlowstoneSlot = -1;
-        preferredTotemSlot = -1;
+        detectedAnchorSlot = -1;
+        detectedGlowstoneSlot = -1;
+        detectedTotemSlot = -1;
     }
 
     private boolean hasLegGlowstonePlacementCandidate(ClientPlayerEntity player, ClientWorld world) {
