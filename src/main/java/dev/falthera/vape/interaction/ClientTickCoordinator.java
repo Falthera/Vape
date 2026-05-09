@@ -118,10 +118,19 @@ public final class ClientTickCoordinator {
                             }
                         }
 
-                        // 2) Support both combos:
-                        // direct: anchor -> glowstone -> totem
-                        // safe:   anchor -> glowstone -> leg glowstone -> totem
-                        // Always try direct totem first for max speed.
+                        // 2) Safe-first fast chain:
+                        // anchor -> leg glowstone (if possible) -> totem.
+                        boolean canDoSafe = countHotbarItem(player, Items.GLOWSTONE) >= 2
+                            && hasLegGlowstonePlacementCandidate(player, client.world);
+
+                        if (canDoSafe) {
+                            int safeGlowSlot = resolvePreferredHotbarSlot(player, Items.GLOWSTONE, detectedGlowstoneSlot);
+                            if (safeGlowSlot >= 0) {
+                                player.getInventory().setSelectedSlot(safeGlowSlot);
+                                tryPlaceGlowstoneNearLegs(player, interactionManager, client.world);
+                            }
+                        }
+
                         boolean immediateSuccess = tryTotemUseOnAnchor(player, interactionManager, context.anchorPos(), tick);
                         player.getInventory().setSelectedSlot(backupSlot);
                         if (immediateSuccess) {
@@ -129,9 +138,7 @@ public final class ClientTickCoordinator {
                             context.setAutoSequenceStarted(true);
                             clearPendingSequence();
                         } else {
-                            boolean canDoSafe = countHotbarItem(player, Items.GLOWSTONE) >= 2
-                                && hasLegGlowstonePlacementCandidate(player, client.world);
-                            pendingStage = canDoSafe ? STAGE_SAFE_GLOWSTONE : STAGE_TOTEM;
+                            pendingStage = STAGE_TOTEM;
                             pendingAnchorPos = context.anchorPos().toImmutable();
                             pendingActionTick = tick + 1L;
                             pendingTotemRetries = MAX_TOTEM_RETRIES;
@@ -204,17 +211,12 @@ public final class ClientTickCoordinator {
         }
 
         if (pendingStage == STAGE_SAFE_GLOWSTONE) {
-            try {
-                int glowSlot = resolvePreferredHotbarSlot(player, Items.GLOWSTONE, detectedGlowstoneSlot);
-                if (glowSlot >= 0) {
-                    player.getInventory().setSelectedSlot(glowSlot);
-                    tryPlaceGlowstoneNearLegs(player, interactionManager, world);
-                }
-            } finally {
-                pendingStage = STAGE_TOTEM;
-                pendingActionTick = tick + 1L;
+            int glowSlot = resolvePreferredHotbarSlot(player, Items.GLOWSTONE, detectedGlowstoneSlot);
+            if (glowSlot >= 0) {
+                player.getInventory().setSelectedSlot(glowSlot);
+                tryPlaceGlowstoneNearLegs(player, interactionManager, world);
             }
-            return;
+            pendingStage = STAGE_TOTEM;
         }
 
         if (pendingStage != STAGE_TOTEM) {
