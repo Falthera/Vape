@@ -12,7 +12,10 @@ import net.minecraft.item.Items;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 import dev.falthera.vape.util.RaycastUtil;
 
 public final class ClientTickCoordinator {
@@ -24,10 +27,14 @@ public final class ClientTickCoordinator {
     private Item lastMainHandItem = null;
     private ClientWorld lastWorld = null;
 
-    private boolean pendingTotemUse = false;
+    private static final int STAGE_NONE = 0;
+    private static final int STAGE_SAFE_GLOWSTONE = 1;
+    private static final int STAGE_TOTEM = 2;
+
+    private int pendingStage = STAGE_NONE;
     private BlockPos pendingAnchorPos = null;
     private int restoreSlotAfterSequence = -1;
-    private long pendingTotemTick = Long.MIN_VALUE;
+    private long pendingActionTick = Long.MIN_VALUE;
 
     public ClientTickCoordinator(FaltheraVapeConfig config, AnchorContextManager anchorContextManager, PacketGuard packetGuard) {
         this.config = config;
@@ -74,8 +81,8 @@ public final class ClientTickCoordinator {
         anchorContextManager.tick(client.world, client.player, tick);
         packetGuard.tick(tick);
 
-        if (pendingTotemUse) {
-            runPendingTotemUse(client, tick);
+        if (pendingStage != STAGE_NONE) {
+            runPendingSequence(client, tick);
         }
 
         // Fast automatic sequence: place glowstone, then switch/use totem on the anchor
@@ -85,7 +92,7 @@ public final class ClientTickCoordinator {
                 try {
                     ClientPlayerEntity player = client.player;
                     ClientPlayerInteractionManager interactionManager = client.interactionManager;
-                    if (player != null && interactionManager != null && !pendingTotemUse) {
+                    if (player != null && interactionManager != null && pendingStage == STAGE_NONE) {
                         int backupSlot = player.getInventory().getSelectedSlot();
 
                         // 1) Try place glowstone if present in hotbar
@@ -98,10 +105,10 @@ public final class ClientTickCoordinator {
                             }
                         }
 
-                        // 2) Queue totem use for the next tick to avoid same-tick desync/ghosting.
-                        pendingTotemUse = true;
+                        // 2) Queue safe-leg glowstone and totem phases on following ticks.
+                        pendingStage = STAGE_SAFE_GLOWSTONE;
                         pendingAnchorPos = context.anchorPos().toImmutable();
-                        pendingTotemTick = tick + 1L;
+                        pendingActionTick = tick + 1L;
                         restoreSlotAfterSequence = backupSlot;
                         context.setAutoSequenceStarted(true);
                     }
@@ -130,14 +137,34 @@ public final class ClientTickCoordinator {
         return -1;
     }
 
-    private void runPendingTotemUse(MinecraftClient client, long tick) {
-        if (tick < pendingTotemTick || pendingAnchorPos == null) {
+    private void runPendingSequence(MinecraftClient client, long tick) {
+        if (tick < pendingActionTick || pendingAnchorPos == null) {
             return;
         }
 
         ClientPlayerEntity player = client.player;
         ClientPlayerInteractionManager interactionManager = client.interactionManager;
-        if (player == null || interactionManager == null) {
+        ClientWorld world = client.world;
+        if (player == null || interactionManager == null || world == null) {
+            clearPendingSequence();
+            return;
+        }
+
+        if (pendingStage == STAGE_SAFE_GLOWSTONE) {
+            try {
+                int glowSlot = findHotbarSlot(player, Items.GLOWSTONE);
+                if (glowSlot >= 0) {
+                    player.getInventory().setSelectedSlot(glowSlot);
+                    tryPlaceGlowstoneNearLegs(player, interactionManager, world);
+                }
+            } finally {
+                pendingStage = STAGE_TOTEM;
+                pendingActionTick = tick + 1L;
+            }
+            return;
+        }
+
+        if (pendingStage != STAGE_TOTEM) {
             clearPendingSequence();
             return;
         }
@@ -173,9 +200,37 @@ public final class ClientTickCoordinator {
     }
 
     private void clearPendingSequence() {
-        pendingTotemUse = false;
+        pendingStage = STAGE_NONE;
         pendingAnchorPos = null;
         restoreSlotAfterSequence = -1;
-        pendingTotemTick = Long.MIN_VALUE;
+        pendingActionTick = Long.MIN_VALUE;
+    }
+
+    private void tryPlaceGlowstoneNearLegs(ClientPlayerEntity player, ClientPlayerInteractionManager interactionManager, ClientWorld world) {
+        BlockPos base = player.getBlockPos();
+        Direction[] legOffsets = new Direction[]{Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST};
+        Direction[] supportOffsets = new Direction[]{Direction.DOWN, Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST};
+
+        for (Direction legOffset : legOffsets) {
+            BlockPos target = base.offset(legOffset);
+            if (!world.getBlockState(target).isAir()) {
+                continue;
+            }
+
+            for (Direction supportOffset : supportOffsets) {
+                BlockPos supportPos = target.offset(supportOffset);
+                if (world.getBlockState(supportPos).isAir()) {
+                    continue;
+                }
+
+                Direction hitSide = supportOffset.getOpposite();
+                Vec3d hitPos = Vec3d.ofCenter(supportPos);
+                BlockHitResult hitResult = new BlockHitResult(hitPos, hitSide, supportPos, false);
+                ActionResult result = interactionManager.interactBlock(player, Hand.MAIN_HAND, hitResult);
+                if (result == ActionResult.SUCCESS || result == ActionResult.CONSUME) {
+                    return;
+                }
+            }
+        }
     }
 }
