@@ -15,35 +15,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: "21"
-
-      - name: Make Gradle launcher executable
-        run: chmod +x ./gradlew
-
-      - name: Build jar
-        run: ./gradlew build --stacktrace --info --warning-mode all
-
-      - name: Find jar
-        id: jar
-        run: |
-          JAR="$(find build/libs -maxdepth 1 -type f -name '*.jar' | head -n 1)"
-          if [ -z "$JAR" ]; then
-            echo "No jar produced in build/libs"
-            ls -la build/libs || true
-            exit 1
-          fi
-          echo "path=$JAR" >> "$GITHUB_OUTPUT"
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: falthera-vape-${{ github.sha }}
-          path: ${{ steps.jar.outputs.path }}
+          fetch-depth: 0
+          fetch-tags: true
 
       - name: Compute next release version
         id: version
@@ -66,9 +40,40 @@ jobs:
 
           NEXT_PATCH=$((PATCH + 1))
           NEXT_TAG="v${MAJOR}.${MINOR}.${NEXT_PATCH}"
+          NEXT_VERSION="${NEXT_TAG#v}"
 
           echo "last_tag=$LAST_TAG" >> "$GITHUB_OUTPUT"
           echo "next_tag=$NEXT_TAG" >> "$GITHUB_OUTPUT"
+          echo "next_version=$NEXT_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Make Gradle launcher executable
+        run: chmod +x ./gradlew
+
+      - name: Build jar
+        run: ./gradlew build --stacktrace --info --warning-mode all -Prelease_version=${{ steps.version.outputs.next_version }}
+
+      - name: Find jar
+        id: jar
+        run: |
+          JAR="$(find build/libs -maxdepth 1 -type f -name '*.jar' | head -n 1)"
+          if [ -z "$JAR" ]; then
+            echo "No jar produced in build/libs"
+            ls -la build/libs || true
+            exit 1
+          fi
+          echo "path=$JAR" >> "$GITHUB_OUTPUT"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: falthera-vape-${{ github.sha }}
+          path: ${{ steps.jar.outputs.path }}
 
       - name: Publish GitHub release
         env:

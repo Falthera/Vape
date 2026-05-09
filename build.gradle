@@ -13,7 +13,8 @@ def requiredProp = { String name ->
 
 group = requiredProp("maven_group")
 
-// Autoversioning: derive a release-looking `project.version` from git tags.
+// Autoversioning: derive a release-looking `project.version` from git tags,
+// or use `-Prelease_version=` when provided by CI release workflow.
 // If HEAD is exactly tagged (e.g. v1.2.3) we use that tag (stripping leading `v`).
 // Otherwise we take the latest tag, bump the patch, and keep that as the
 // project.version so non-tag builds are not marked as pre-release. The
@@ -34,6 +35,11 @@ version = {
     }
 
     def modVersionProp = project.findProperty('mod_version')
+    def releaseVersionProp = project.findProperty('release_version')
+
+    if (releaseVersionProp != null && !releaseVersionProp.toString().trim().isEmpty()) {
+        return releaseVersionProp.toString().trim().replaceAll(/^v/, '')
+    }
 
     // If this commit is exactly tagged, use that tag as the version
     def exactTag = gitOutput(['describe', '--tags', '--exact-match'])
