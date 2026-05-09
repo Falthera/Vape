@@ -34,11 +34,13 @@ public final class ClientTickCoordinator {
     private static final int STAGE_NONE = 0;
     private static final int STAGE_SAFE_GLOWSTONE = 1;
     private static final int STAGE_TOTEM = 2;
+    private static final int MAX_TOTEM_RETRIES = 2;
 
     private int pendingStage = STAGE_NONE;
     private BlockPos pendingAnchorPos = null;
     private int restoreSlotAfterSequence = -1;
     private long pendingActionTick = Long.MIN_VALUE;
+    private int pendingTotemRetries = 0;
 
     public ClientTickCoordinator(FaltheraVapeConfig config, AnchorContextManager anchorContextManager, PacketGuard packetGuard) {
         this.config = config;
@@ -121,11 +123,30 @@ public final class ClientTickCoordinator {
                         // safe:   anchor -> glowstone -> leg glowstone -> totem
                         boolean canDoSafe = countHotbarItem(player, Items.GLOWSTONE) >= 2
                             && hasLegGlowstonePlacementCandidate(player, client.world);
-                        pendingStage = canDoSafe ? STAGE_SAFE_GLOWSTONE : STAGE_TOTEM;
-                        pendingAnchorPos = context.anchorPos().toImmutable();
-                        pendingActionTick = tick + 1L;
-                        restoreSlotAfterSequence = backupSlot;
-                        context.setAutoSequenceStarted(true);
+                        if (!canDoSafe) {
+                            // Direct mode: try immediate totem use once, then queue retries if needed.
+                            boolean immediateSuccess = tryTotemUseOnAnchor(player, interactionManager, context.anchorPos(), tick);
+                            player.getInventory().setSelectedSlot(backupSlot);
+                            if (immediateSuccess) {
+                                anchorContextManager.consume();
+                                context.setAutoSequenceStarted(true);
+                                clearPendingSequence();
+                            } else {
+                                pendingStage = STAGE_TOTEM;
+                                pendingAnchorPos = context.anchorPos().toImmutable();
+                                pendingActionTick = tick + 1L;
+                                pendingTotemRetries = MAX_TOTEM_RETRIES;
+                                restoreSlotAfterSequence = backupSlot;
+                                context.setAutoSequenceStarted(true);
+                            }
+                        } else {
+                            pendingStage = STAGE_SAFE_GLOWSTONE;
+                            pendingAnchorPos = context.anchorPos().toImmutable();
+                            pendingActionTick = tick + 1L;
+                            pendingTotemRetries = MAX_TOTEM_RETRIES;
+                            restoreSlotAfterSequence = backupSlot;
+                            context.setAutoSequenceStarted(true);
+                        }
                     }
                 } catch (Exception e) {
                     // don't crash the client; silently ignore failures
@@ -210,34 +231,28 @@ public final class ClientTickCoordinator {
             return;
         }
 
+        boolean success = false;
         try {
-            Hand useHand = Hand.MAIN_HAND;
-            if (player.getOffHandStack().getItem() == Items.TOTEM_OF_UNDYING) {
-                useHand = Hand.OFF_HAND;
-            } else {
-                int totemSlot = resolvePreferredHotbarSlot(player, Items.TOTEM_OF_UNDYING, detectedTotemSlot);
-                if (totemSlot >= 0) {
-                    player.getInventory().setSelectedSlot(totemSlot);
-                } else {
-                    if (restoreSlotAfterSequence >= 0) {
-                        player.getInventory().setSelectedSlot(restoreSlotAfterSequence);
-                    }
-                    clearPendingSequence();
-                    return;
-                }
-            }
-
-            if (packetGuard.beginSyntheticDispatch(pendingAnchorPos, useHand, tick)) {
-                interactionManager.interactBlock(player, useHand, RaycastUtil.anchorHitResult(player, pendingAnchorPos));
-                packetGuard.endSyntheticDispatch();
-            }
+            success = tryTotemUseOnAnchor(player, interactionManager, pendingAnchorPos, tick);
         } finally {
             if (restoreSlotAfterSequence >= 0) {
                 player.getInventory().setSelectedSlot(restoreSlotAfterSequence);
             }
+        }
+
+        if (success) {
             anchorContextManager.consume();
             clearPendingSequence();
+            return;
         }
+
+        if (pendingTotemRetries > 0) {
+            pendingTotemRetries--;
+            pendingActionTick = tick + 1L;
+            return;
+        }
+
+        clearPendingSequence();
     }
 
     private void clearPendingSequence() {
@@ -245,6 +260,34 @@ public final class ClientTickCoordinator {
         pendingAnchorPos = null;
         restoreSlotAfterSequence = -1;
         pendingActionTick = Long.MIN_VALUE;
+        pendingTotemRetries = 0;
+    }
+
+    private boolean tryTotemUseOnAnchor(ClientPlayerEntity player, ClientPlayerInteractionManager interactionManager, BlockPos anchorPos, long tick) {
+        Hand useHand = Hand.MAIN_HAND;
+        if (player.getOffHandStack().getItem() == Items.TOTEM_OF_UNDYING) {
+            useHand = Hand.OFF_HAND;
+        } else {
+            int totemSlot = resolvePreferredHotbarSlot(player, Items.TOTEM_OF_UNDYING, detectedTotemSlot);
+            if (totemSlot >= 0) {
+                player.getInventory().setSelectedSlot(totemSlot);
+            } else {
+                return false;
+            }
+        }
+
+        if (!packetGuard.beginSyntheticDispatch(anchorPos, useHand, tick)) {
+            return false;
+        }
+
+        ActionResult result;
+        try {
+            result = interactionManager.interactBlock(player, useHand, RaycastUtil.anchorHitResult(player, anchorPos));
+        } finally {
+            packetGuard.endSyntheticDispatch();
+        }
+
+        return result == ActionResult.SUCCESS || result == ActionResult.CONSUME;
     }
 
     private void clearPreferredSlots() {
