@@ -45,12 +45,36 @@ jobs:
           name: falthera-vape-${{ github.sha }}
           path: ${{ steps.jar.outputs.path }}
 
+      - name: Compute next release version
+        id: version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          LAST_TAG="$(gh release list --limit 200 --json tagName --jq '.[].tagName' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1 || true)"
+
+          if [ -z "$LAST_TAG" ]; then
+            LAST_TAG="v0.0.0"
+          fi
+
+          VERSION="${LAST_TAG#v}"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+
+          if [ -z "$MAJOR" ] || [ -z "$MINOR" ] || [ -z "$PATCH" ]; then
+            echo "Failed to parse last version tag: $LAST_TAG"
+            exit 1
+          fi
+
+          NEXT_PATCH=$((PATCH + 1))
+          NEXT_TAG="v${MAJOR}.${MINOR}.${NEXT_PATCH}"
+
+          echo "last_tag=$LAST_TAG" >> "$GITHUB_OUTPUT"
+          echo "next_tag=$NEXT_TAG" >> "$GITHUB_OUTPUT"
+
       - name: Publish GitHub release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "build-${GITHUB_SHA}" "${{ steps.jar.outputs.path }}" \
-            --title "Falthera VAPE ${GITHUB_SHA}" \
-            --notes "Automated release for commit ${GITHUB_SHA}" \
-            --prerelease \
+          gh release create "${{ steps.version.outputs.next_tag }}" "${{ steps.jar.outputs.path }}" \
+            --title "Falthera VAPE ${{ steps.version.outputs.next_tag }}" \
+            --notes "Automated release ${{ steps.version.outputs.next_tag }} for commit ${GITHUB_SHA}" \
             --target "${GITHUB_SHA}"
