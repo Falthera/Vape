@@ -12,6 +12,7 @@ import net.minecraft.item.Items;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.math.BlockPos;
 import dev.falthera.vape.util.RaycastUtil;
 
 public final class ClientTickCoordinator {
@@ -22,7 +23,11 @@ public final class ClientTickCoordinator {
     private int lastSelectedSlot = -1;
     private Item lastMainHandItem = null;
     private ClientWorld lastWorld = null;
-    
+
+    private boolean pendingTotemUse = false;
+    private BlockPos pendingAnchorPos = null;
+    private int restoreSlotAfterSequence = -1;
+    private long pendingTotemTick = Long.MIN_VALUE;
 
     public ClientTickCoordinator(FaltheraVapeConfig config, AnchorContextManager anchorContextManager, PacketGuard packetGuard) {
         this.config = config;
@@ -41,6 +46,7 @@ public final class ClientTickCoordinator {
             lastWorld = client.world;
             lastSelectedSlot = -1;
             lastMainHandItem = null;
+            clearPendingSequence();
             anchorContextManager.clear();
             packetGuard.clear();
             return;
@@ -50,6 +56,7 @@ public final class ClientTickCoordinator {
             lastWorld = client.world;
             lastSelectedSlot = -1;
             lastMainHandItem = null;
+            clearPendingSequence();
             anchorContextManager.clear();
             packetGuard.clear();
         }
@@ -67,14 +74,18 @@ public final class ClientTickCoordinator {
         anchorContextManager.tick(client.world, client.player, tick);
         packetGuard.tick(tick);
 
+        if (pendingTotemUse) {
+            runPendingTotemUse(client, tick);
+        }
+
         // Fast automatic sequence: place glowstone, then switch/use totem on the anchor
         if (config.assistEnabled() && config.fastMode()) {
             var context = anchorContextManager.activeContext();
-            if (context != null && context.confirmed() && !context.autoSequenceStarted()) {
+            if (context != null && context.confirmed() && !context.autoSequenceStarted() && tick - context.createdTick() >= 1L) {
                 try {
                     ClientPlayerEntity player = client.player;
                     ClientPlayerInteractionManager interactionManager = client.interactionManager;
-                    if (player != null && interactionManager != null) {
+                    if (player != null && interactionManager != null && !pendingTotemUse) {
                         int backupSlot = player.getInventory().getSelectedSlot();
 
                         // 1) Try place glowstone if present in hotbar
@@ -84,38 +95,19 @@ public final class ClientTickCoordinator {
                             if (packetGuard.beginSyntheticDispatch(context.anchorPos(), Hand.MAIN_HAND, tick)) {
                                 ActionResult res = interactionManager.interactBlock(player, Hand.MAIN_HAND, RaycastUtil.anchorHitResult(player, context.anchorPos()));
                                 packetGuard.endSyntheticDispatch();
-                                if (res == ActionResult.SUCCESS || res == ActionResult.CONSUME) {
-                                    anchorContextManager.consume();
-                                }
                             }
                         }
 
-                        // 2) Use totem on anchor (prefer offhand if present)
-                        Hand useHand = Hand.MAIN_HAND;
-                        if (player.getOffHandStack().getItem() == Items.TOTEM_OF_UNDYING) {
-                            useHand = Hand.OFF_HAND;
-                        } else {
-                            int totemSlot = findHotbarSlot(player, Items.TOTEM_OF_UNDYING);
-                            if (totemSlot >= 0) {
-                                player.getInventory().setSelectedSlot(totemSlot);
-                                useHand = Hand.MAIN_HAND;
-                            }
-                        }
-
-                        if (packetGuard.beginSyntheticDispatch(context.anchorPos(), useHand, tick)) {
-                            ActionResult res2 = interactionManager.interactBlock(player, useHand, RaycastUtil.anchorHitResult(player, context.anchorPos()));
-                            packetGuard.endSyntheticDispatch();
-                            if (res2 == ActionResult.SUCCESS || res2 == ActionResult.CONSUME) {
-                                anchorContextManager.consume();
-                            }
-                        }
-
-                        // restore selection
-                        player.getInventory().setSelectedSlot(backupSlot);
+                        // 2) Queue totem use for the next tick to avoid same-tick desync/ghosting.
+                        pendingTotemUse = true;
+                        pendingAnchorPos = context.anchorPos().toImmutable();
+                        pendingTotemTick = tick + 1L;
+                        restoreSlotAfterSequence = backupSlot;
                         context.setAutoSequenceStarted(true);
                     }
                 } catch (Exception e) {
                     // don't crash the client; silently ignore failures
+                    clearPendingSequence();
                 }
             }
         }
@@ -136,5 +128,54 @@ public final class ClientTickCoordinator {
             }
         }
         return -1;
+    }
+
+    private void runPendingTotemUse(MinecraftClient client, long tick) {
+        if (tick < pendingTotemTick || pendingAnchorPos == null) {
+            return;
+        }
+
+        ClientPlayerEntity player = client.player;
+        ClientPlayerInteractionManager interactionManager = client.interactionManager;
+        if (player == null || interactionManager == null) {
+            clearPendingSequence();
+            return;
+        }
+
+        try {
+            Hand useHand = Hand.MAIN_HAND;
+            if (player.getOffHandStack().getItem() == Items.TOTEM_OF_UNDYING) {
+                useHand = Hand.OFF_HAND;
+            } else {
+                int totemSlot = findHotbarSlot(player, Items.TOTEM_OF_UNDYING);
+                if (totemSlot >= 0) {
+                    player.getInventory().setSelectedSlot(totemSlot);
+                } else {
+                    if (restoreSlotAfterSequence >= 0) {
+                        player.getInventory().setSelectedSlot(restoreSlotAfterSequence);
+                    }
+                    clearPendingSequence();
+                    return;
+                }
+            }
+
+            if (packetGuard.beginSyntheticDispatch(pendingAnchorPos, useHand, tick)) {
+                interactionManager.interactBlock(player, useHand, RaycastUtil.anchorHitResult(player, pendingAnchorPos));
+                packetGuard.endSyntheticDispatch();
+            }
+        } finally {
+            if (restoreSlotAfterSequence >= 0) {
+                player.getInventory().setSelectedSlot(restoreSlotAfterSequence);
+            }
+            anchorContextManager.consume();
+            clearPendingSequence();
+        }
+    }
+
+    private void clearPendingSequence() {
+        pendingTotemUse = false;
+        pendingAnchorPos = null;
+        restoreSlotAfterSequence = -1;
+        pendingTotemTick = Long.MIN_VALUE;
     }
 }
