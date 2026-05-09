@@ -105,8 +105,12 @@ public final class ClientTickCoordinator {
                             }
                         }
 
-                        // 2) Queue safe-leg glowstone and totem phases on following ticks.
-                        pendingStage = STAGE_SAFE_GLOWSTONE;
+                        // 2) Support both combos:
+                        // direct: anchor -> glowstone -> totem
+                        // safe:   anchor -> glowstone -> leg glowstone -> totem
+                        boolean canDoSafe = countHotbarItem(player, Items.GLOWSTONE) >= 2
+                            && hasLegGlowstonePlacementCandidate(player, client.world);
+                        pendingStage = canDoSafe ? STAGE_SAFE_GLOWSTONE : STAGE_TOTEM;
                         pendingAnchorPos = context.anchorPos().toImmutable();
                         pendingActionTick = tick + 1L;
                         restoreSlotAfterSequence = backupSlot;
@@ -135,6 +139,20 @@ public final class ClientTickCoordinator {
             }
         }
         return -1;
+    }
+
+    private int countHotbarItem(ClientPlayerEntity player, Item item) {
+        int count = 0;
+        for (int i = 0; i < 9; i++) {
+            try {
+                var stack = player.getInventory().getStack(i);
+                if (stack.getItem() == item) {
+                    count += stack.getCount();
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        return count;
     }
 
     private void runPendingSequence(MinecraftClient client, long tick) {
@@ -204,6 +222,30 @@ public final class ClientTickCoordinator {
         pendingAnchorPos = null;
         restoreSlotAfterSequence = -1;
         pendingActionTick = Long.MIN_VALUE;
+    }
+
+    private boolean hasLegGlowstonePlacementCandidate(ClientPlayerEntity player, ClientWorld world) {
+        BlockPos base = player.getBlockPos();
+        Direction[] legOffsets = new Direction[]{Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST};
+        Direction[] supportOffsets = new Direction[]{Direction.DOWN, Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST};
+
+        for (Direction legOffset : legOffsets) {
+            BlockPos target = base.offset(legOffset);
+            if (!world.getBlockState(target).isAir()) {
+                continue;
+            }
+
+            for (Direction supportOffset : supportOffsets) {
+                BlockPos supportPos = target.offset(supportOffset);
+                if (world.getBlockState(supportPos).isAir()) {
+                    continue;
+                }
+
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void tryPlaceGlowstoneNearLegs(ClientPlayerEntity player, ClientPlayerInteractionManager interactionManager, ClientWorld world) {
