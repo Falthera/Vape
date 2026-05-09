@@ -40,6 +40,14 @@ A high-performance Minecraft Fabric mod that provides godspeed-level automatic r
 
 ## Usage
 
+### Why Multiple Totems?
+
+In PvP combat, players typically carry **multiple totems of undying** for two reasons:
+1. **Offensive Anchoring**: Chain multiple anchor combos against an opponent (double, triple, quadruple anchors)
+2. **Defensive Survival**: If an opponent anchors you while you're anchoring them, you need a totem to survive the counter-pop
+
+The extra totem ensures you don't die if both players anchor each other simultaneously — if you pop your totem from their anchor while mid-combo on them, you still have a totem for your own anchor sequence.
+
 ### Basic Anchor Combo (Direct Pattern)
 
 1. Place a **respawn anchor** at player level
@@ -54,6 +62,15 @@ A high-performance Minecraft Fabric mod that provides godspeed-level automatic r
 3. Place **glowstone at your leg level** (beside/below the anchor)
 4. Hold **totem of undying** in main or off-hand
 5. **The mod will detect the leg glowstone and optimize the sequence** automatically
+
+### Multi-Anchor Sequences
+
+The mod supports **back-to-back anchor combos** at godspeed speeds:
+- Place multiple anchors in quick succession
+- Each anchor is independently detected and assisted
+- Pattern (safe vs direct) is detected **per anchor**
+- Totems are consumed naturally as you chain combos
+- This enables the aggressive double/triple anchor offense that competitive players rely on
 
 The mod adapts — if you use safe anchors on one placement and direct anchors on the next, each will use its correct sequence.
 
