@@ -9,7 +9,6 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
-import net.minecraft.block.Blocks;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -35,7 +34,7 @@ public final class ClientTickCoordinator {
     private static final int STAGE_NONE = 0;
     private static final int STAGE_SAFE_GLOWSTONE = 1;
     private static final int STAGE_TOTEM = 2;
-    private static final int MAX_TOTEM_RETRIES = 2;
+    private static final int MAX_TOTEM_RETRIES = 1;
 
     private int pendingStage = STAGE_NONE;
     private BlockPos pendingAnchorPos = null;
@@ -109,9 +108,6 @@ public final class ClientTickCoordinator {
                     if (player != null && interactionManager != null && pendingStage == STAGE_NONE) {
                         int backupSlot = player.getInventory().getSelectedSlot();
 
-                        // Detect which pattern the user is doing: check if glowstone already exists at leg positions
-                        boolean legGlowstoneDetected = hasLegGlowstone(player, client.world);
-
                         // Try totem immediately (user will have either:
                         // - safe: already placed leg glowstone, we just do totem
                         // - direct: skipping leg glowstone, we just do totem)
@@ -124,7 +120,7 @@ public final class ClientTickCoordinator {
                         } else {
                             pendingStage = STAGE_TOTEM;
                             pendingAnchorPos = context.anchorPos().toImmutable();
-                            pendingActionTick = tick + 1L;
+                            pendingActionTick = tick;
                             pendingTotemRetries = MAX_TOTEM_RETRIES;
                             restoreSlotAfterSequence = backupSlot;
                             context.setAutoSequenceStarted(true);
@@ -225,7 +221,7 @@ public final class ClientTickCoordinator {
 
         if (pendingTotemRetries > 0) {
             pendingTotemRetries--;
-            pendingActionTick = tick + 1L;
+            pendingActionTick = tick;
             return;
         }
 
@@ -271,20 +267,6 @@ public final class ClientTickCoordinator {
         detectedAnchorSlot = -1;
         detectedGlowstoneSlot = -1;
         detectedTotemSlot = -1;
-    }
-
-    private boolean hasLegGlowstone(ClientPlayerEntity player, ClientWorld world) {
-        BlockPos base = player.getBlockPos();
-        Direction[] legOffsets = new Direction[]{Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST};
-
-        for (Direction legOffset : legOffsets) {
-            BlockPos target = base.offset(legOffset);
-            if (world.getBlockState(target).getBlock() == Blocks.GLOWSTONE) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private boolean hasLegGlowstonePlacementCandidate(ClientPlayerEntity player, ClientWorld world) {
