@@ -10,6 +10,7 @@ public final class AnchorContext {
     private boolean confirmed;
     private boolean glowstoneObserved;
     private boolean swappedOffGlowstoneObserved;
+    private boolean autoSequenceStarted;
 
     public AnchorContext(BlockPos anchorPos, long createdTick) {
         this.anchorPos = anchorPos.toImmutable();
@@ -73,6 +74,14 @@ public final class AnchorContext {
         if (swappedOffGlowstoneObserved) {
             addConfidence(0.20f);
         }
+    }
+
+    public boolean autoSequenceStarted() {
+        return autoSequenceStarted;
+    }
+
+    public void setAutoSequenceStarted(boolean started) {
+        this.autoSequenceStarted = started;
     }
 
     public boolean isExpired(long tick, int windowTicks) {

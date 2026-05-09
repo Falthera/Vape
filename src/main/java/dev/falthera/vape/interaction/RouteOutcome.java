@@ -1,4 +1,4 @@
-package dev.falthera.vape.interaction;
+    package dev.falthera.vape.interaction;
 
 import net.minecraft.util.ActionResult;
 

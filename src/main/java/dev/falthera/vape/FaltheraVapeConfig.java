@@ -1,8 +1,8 @@
 package dev.falthera.vape;
 
 public final class FaltheraVapeConfig {
-    // Keep assist enabled by default; make fast-mode permanently enabled
-    private boolean assistEnabled = true;
+    // Assist is permanently enabled in this build (no keybinds or toggles)
+    private final boolean assistEnabled = true;
     private boolean hudEnabled = false;
     private boolean debugEnabled = false;
     private int contextWindowTicks = 1;
@@ -21,7 +21,7 @@ public final class FaltheraVapeConfig {
     }
 
     public void toggleAssist() {
-        assistEnabled = !assistEnabled;
+        // no-op: assist is permanently enabled
     }
 
     public boolean hudEnabled() {
