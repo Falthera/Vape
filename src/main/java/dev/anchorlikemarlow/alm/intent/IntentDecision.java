@@ -1,4 +1,4 @@
-package dev.falthera.vape.intent;
+﻿package dev.anchorlikemarlow.alm.intent;
 
 public record IntentDecision(ConfidenceLevel level, float score, String reason) {
     public static IntentDecision low(String reason) {

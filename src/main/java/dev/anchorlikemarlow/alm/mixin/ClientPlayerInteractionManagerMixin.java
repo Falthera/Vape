@@ -1,10 +1,10 @@
-package dev.falthera.vape.mixin;
+﻿package dev.anchorlikemarlow.alm.mixin;
 
-import dev.falthera.vape.FaltheraVapeClient;
-import dev.falthera.vape.anchor.AnchorContextManager;
-import dev.falthera.vape.interaction.InteractionRouter;
-import dev.falthera.vape.interaction.RouteOutcome;
-import dev.falthera.vape.util.BlockStateChecks;
+import dev.anchorlikemarlow.alm.ALMClient;
+import dev.anchorlikemarlow.alm.anchor.AnchorContextManager;
+import dev.anchorlikemarlow.alm.interaction.InteractionRouter;
+import dev.anchorlikemarlow.alm.interaction.RouteOutcome;
+import dev.anchorlikemarlow.alm.util.BlockStateChecks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
@@ -21,8 +21,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ClientPlayerInteractionManager.class)
 public abstract class ClientPlayerInteractionManagerMixin {
     @Inject(method = "interactBlock", at = @At("HEAD"), cancellable = true)
-    private void faltheraVape$redirectBlockUse(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir) {
-        FaltheraVapeClient runtime = FaltheraVapeClient.getInstance();
+    private void alm$redirectBlockUse(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir) {
+        ALMClient runtime = ALMClient.getInstance();
         MinecraftClient client = MinecraftClient.getInstance();
         if (runtime == null || client.world == null || client.player == null) {
             return;
@@ -45,8 +45,8 @@ public abstract class ClientPlayerInteractionManagerMixin {
     }
 
     @Inject(method = "interactBlock", at = @At("RETURN"))
-    private void faltheraVape$trackAnchorPlacement(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir) {
-        FaltheraVapeClient runtime = FaltheraVapeClient.getInstance();
+    private void alm$trackAnchorPlacement(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir) {
+        ALMClient runtime = ALMClient.getInstance();
         MinecraftClient client = MinecraftClient.getInstance();
         if (runtime == null || client.world == null || client.player == null) {
             return;

@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "id": "falthera-vape",
+  "id": "anchor-like-marlow",
   "version": "0.1.0",
-  "name": "Falthera VAPE",
+  "name": "AnchorLikeMarlow",
   "description": "Client-side respawn anchor interaction stabilizer.",
   "authors": ["Falthera"],
   "contact": {},
@@ -10,11 +10,11 @@
   "environment": "client",
   "entrypoints": {
     "client": [
-      "dev.falthera.vape.FaltheraVapeClient"
+      "dev.anchorlikemarlow.alm.ALMClient"
     ]
   },
   "mixins": [
-    "falthera-vape.mixins.json"
+    "anchor-like-marlow.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.19.2",

@@ -1,6 +1,6 @@
-package dev.falthera.vape;
+﻿package dev.anchorlikemarlow.alm;
 
-public final class FaltheraVapeConfig {
+public final class ALMConfig {
     // Assist is permanently enabled in this build (no keybinds or toggles)
     private final boolean assistEnabled = true;
     private boolean hudEnabled = false;

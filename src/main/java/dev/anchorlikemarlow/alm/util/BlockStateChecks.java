@@ -1,4 +1,4 @@
-package dev.falthera.vape.util;
+﻿package dev.anchorlikemarlow.alm.util;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;

@@ -1,8 +1,8 @@
-package dev.falthera.vape.render;
+﻿package dev.anchorlikemarlow.alm.render;
 
-import dev.falthera.vape.FaltheraVapeConfig;
-import dev.falthera.vape.anchor.AnchorContextManager;
-import dev.falthera.vape.intent.IntentResolver;
+import dev.anchorlikemarlow.alm.ALMConfig;
+import dev.anchorlikemarlow.alm.anchor.AnchorContextManager;
+import dev.anchorlikemarlow.alm.intent.IntentResolver;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.text.Text;
@@ -10,13 +10,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class AnchorHudOverlay {
-    private static final Logger LOGGER = LoggerFactory.getLogger("Falthera VAPE [HUD]");
-    private final FaltheraVapeConfig config;
+    private static final Logger LOGGER = LoggerFactory.getLogger("AnchorLikeMarlow [HUD]");
+    private final ALMConfig config;
     private final AnchorContextManager anchorContextManager;
     @SuppressWarnings("unused")
     private final IntentResolver intentResolver;
 
-    public AnchorHudOverlay(FaltheraVapeConfig config, AnchorContextManager anchorContextManager, IntentResolver intentResolver) {
+    public AnchorHudOverlay(ALMConfig config, AnchorContextManager anchorContextManager, IntentResolver intentResolver) {
         this.config = config;
         this.anchorContextManager = anchorContextManager;
         this.intentResolver = intentResolver;
@@ -51,8 +51,8 @@ public final class AnchorHudOverlay {
 
             // Build display text
             String text = config.debugEnabled()
-                ? "Falthera VAPE: active (" + String.format("%.2f", anchorContextManager.confidenceScore()) + ")"
-                : "Falthera VAPE: active";
+                ? "AnchorLikeMarlow: active (" + String.format("%.2f", anchorContextManager.confidenceScore()) + ")"
+                : "AnchorLikeMarlow: active";
 
             // Render with shadow for better visibility
             drawContext.drawTextWithShadow(

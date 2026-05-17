@@ -1,18 +1,18 @@
-package dev.falthera.vape.network;
+﻿package dev.anchorlikemarlow.alm.network;
 
-import dev.falthera.vape.FaltheraVapeConfig;
+import dev.anchorlikemarlow.alm.ALMConfig;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.Hand;
 
 public final class PacketGuard {
-    private final FaltheraVapeConfig config;
+    private final ALMConfig config;
 
     private boolean syntheticDispatchActive;
     private BlockPos lastDispatchPos;
     private Hand lastDispatchHand;
     private long lastDispatchTick = Long.MIN_VALUE;
 
-    public PacketGuard(FaltheraVapeConfig config) {
+    public PacketGuard(ALMConfig config) {
         this.config = config;
     }
 

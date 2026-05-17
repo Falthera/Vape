@@ -1,9 +1,9 @@
-package dev.falthera.vape.interaction;
+﻿package dev.anchorlikemarlow.alm.interaction;
 
-import dev.falthera.vape.FaltheraVapeConfig;
-import dev.falthera.vape.FaltheraVapeClient;
-import dev.falthera.vape.anchor.AnchorContextManager;
-import dev.falthera.vape.network.PacketGuard;
+import dev.anchorlikemarlow.alm.ALMConfig;
+import dev.anchorlikemarlow.alm.ALMClient;
+import dev.anchorlikemarlow.alm.anchor.AnchorContextManager;
+import dev.anchorlikemarlow.alm.network.PacketGuard;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
@@ -16,10 +16,10 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
-import dev.falthera.vape.util.RaycastUtil;
+import dev.anchorlikemarlow.alm.util.RaycastUtil;
 
 public final class ClientTickCoordinator {
-    private final FaltheraVapeConfig config;
+    private final ALMConfig config;
     private final AnchorContextManager anchorContextManager;
     private final PacketGuard packetGuard;
 
@@ -42,7 +42,7 @@ public final class ClientTickCoordinator {
     private long pendingActionTick = Long.MIN_VALUE;
     private int pendingTotemRetries = 0;
 
-    public ClientTickCoordinator(FaltheraVapeConfig config, AnchorContextManager anchorContextManager, PacketGuard packetGuard) {
+    public ClientTickCoordinator(ALMConfig config, AnchorContextManager anchorContextManager, PacketGuard packetGuard) {
         this.config = config;
         this.anchorContextManager = anchorContextManager;
         this.packetGuard = packetGuard;
@@ -135,7 +135,7 @@ public final class ClientTickCoordinator {
 
         if (config.debugEnabled() && config.fastMode()) {
             long elapsedMs = (System.nanoTime() - startNanos) / 1_000_000L;
-            FaltheraVapeClient.LOGGER.info("[fastMode][tick] tick={} durationMs={} worldPresent={} playerPresent={} assistEnabled={}", tick, elapsedMs, client.world != null, client.player != null, config.assistEnabled());
+            ALMClient.LOGGER.info("[fastMode][tick] tick={} durationMs={} worldPresent={} playerPresent={} assistEnabled={}", tick, elapsedMs, client.world != null, client.player != null, config.assistEnabled());
         }
     }
 

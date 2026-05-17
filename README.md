@@ -1,4 +1,4 @@
-# Falthera VAPE — Ultra-Fast Respawn Anchor Assistance
+# AnchorLikeMarlow — Ultra-Fast Respawn Anchor Assistance
 
 A high-performance Minecraft Fabric mod that provides godspeed-level automatic respawn anchor assistance. Place an anchor, charge it with glowstone, and the mod handles the totem usage at lightning-fast speeds (≤10ms per sequence).
 
@@ -33,7 +33,7 @@ A high-performance Minecraft Fabric mod that provides godspeed-level automatic r
 - **Java**: 17+
 
 ### Steps
-1. Download the latest JAR from [Releases](https://github.com/Falthera/Vape/releases)
+1. Download the latest JAR from [Releases](https://github.com/Falthera/AnchorLikeMarlow/releases)
 2. Place it in your `.minecraft/mods` folder
 3. Launch Minecraft with the Fabric Loader
 4. The mod is immediately active — no configuration needed
@@ -76,7 +76,7 @@ The mod adapts — if you use safe anchors on one placement and direct anchors o
 
 ## Configuration
 
-Configuration file: `.minecraft/config/falthera-vape.json5`
+Configuration file: `.minecraft/config/anchor-like-marlow.json5`
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
@@ -142,13 +142,13 @@ The mod monitors your hotbar for:
 ### Steps
 ```bash
 # Clone the repository
-git clone https://github.com/Falthera/Vape.git
-cd Falthera\ Vape
+git clone https://github.com/Falthera/AnchorLikeMarlow.git
+cd AnchorLikeMarlow
 
 # Build the mod
 ./gradlew build
 
-# Output JAR: build/libs/falthera-vape-*.jar
+# Output JAR: build/libs/anchor-like-marlow-*.jar
 ```
 
 ## Releases & Versioning
@@ -204,11 +204,11 @@ Contributions welcome! Please:
 
 ## Support
 
-- **Issues**: Report bugs on [GitHub Issues](https://github.com/Falthera/Vape/issues)
-- **Discussions**: Ask questions on [GitHub Discussions](https://github.com/Falthera/Vape/discussions)
+- **Issues**: Report bugs on [GitHub Issues](https://github.com/Falthera/AnchorLikeMarlow/issues)
+- **Discussions**: Ask questions on [GitHub Discussions](https://github.com/Falthera/AnchorLikeMarlow/discussions)
 
 ---
 
-**Made by Falthera** | **Lightning-fast Minecraft assistance** ⚡
+**AnchorLikeMarlow (ALM)** | **Lightning-fast Minecraft assistance** ⚡
 
 Made with ❤️ for the Minecraft Fabric community.

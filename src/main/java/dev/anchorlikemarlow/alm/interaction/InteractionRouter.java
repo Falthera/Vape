@@ -1,14 +1,14 @@
-package dev.falthera.vape.interaction;
+﻿package dev.anchorlikemarlow.alm.interaction;
 
-import dev.falthera.vape.FaltheraVapeConfig;
-import dev.falthera.vape.anchor.AnchorContext;
-import dev.falthera.vape.anchor.AnchorContextManager;
-import dev.falthera.vape.intent.ConfidenceLevel;
-import dev.falthera.vape.intent.IntentDecision;
-import dev.falthera.vape.intent.IntentResolver;
-import dev.falthera.vape.network.PacketGuard;
-import dev.falthera.vape.util.BlockStateChecks;
-import dev.falthera.vape.util.RaycastUtil;
+import dev.anchorlikemarlow.alm.ALMConfig;
+import dev.anchorlikemarlow.alm.anchor.AnchorContext;
+import dev.anchorlikemarlow.alm.anchor.AnchorContextManager;
+import dev.anchorlikemarlow.alm.intent.ConfidenceLevel;
+import dev.anchorlikemarlow.alm.intent.IntentDecision;
+import dev.anchorlikemarlow.alm.intent.IntentResolver;
+import dev.anchorlikemarlow.alm.network.PacketGuard;
+import dev.anchorlikemarlow.alm.util.BlockStateChecks;
+import dev.anchorlikemarlow.alm.util.RaycastUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
@@ -19,12 +19,12 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 
 public final class InteractionRouter {
-    private final FaltheraVapeConfig config;
+    private final ALMConfig config;
     private final AnchorContextManager anchorContextManager;
     private final IntentResolver intentResolver;
     private final PacketGuard packetGuard;
 
-    public InteractionRouter(FaltheraVapeConfig config, AnchorContextManager anchorContextManager, IntentResolver intentResolver, PacketGuard packetGuard) {
+    public InteractionRouter(ALMConfig config, AnchorContextManager anchorContextManager, IntentResolver intentResolver, PacketGuard packetGuard) {
         this.config = config;
         this.anchorContextManager = anchorContextManager;
         this.intentResolver = intentResolver;
@@ -96,7 +96,7 @@ public final class InteractionRouter {
         }
 
         if (config.debugEnabled() && config.fastMode()) {
-            dev.falthera.vape.FaltheraVapeClient.LOGGER.info("[fastMode] performSyntheticUse reason={} target={} tick={}", reason, targetPos, tick);
+            dev.anchorlikemarlow.alm.ALMClient.LOGGER.info("[fastMode] performSyntheticUse reason={} target={} tick={}", reason, targetPos, tick);
         }
 
         try {

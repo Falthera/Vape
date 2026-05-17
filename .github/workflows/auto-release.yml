@@ -72,7 +72,7 @@ jobs:
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: falthera-vape-${{ github.sha }}
+          name: anchor-like-marlow-${{ github.sha }}
           path: ${{ steps.jar.outputs.path }}
 
       - name: Publish GitHub release
@@ -80,6 +80,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create "${{ steps.version.outputs.next_tag }}" "${{ steps.jar.outputs.path }}" \
-            --title "Falthera VAPE ${{ steps.version.outputs.next_tag }}" \
+            --title "AnchorLikeMarlow ${{ steps.version.outputs.next_tag }}" \
             --notes "Automated release ${{ steps.version.outputs.next_tag }} for commit ${GITHUB_SHA}" \
             --target "${GITHUB_SHA}"

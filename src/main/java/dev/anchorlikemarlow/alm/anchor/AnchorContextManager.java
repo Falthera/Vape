@@ -1,7 +1,7 @@
-package dev.falthera.vape.anchor;
+﻿package dev.anchorlikemarlow.alm.anchor;
 
-import dev.falthera.vape.FaltheraVapeConfig;
-import dev.falthera.vape.util.BlockStateChecks;
+import dev.anchorlikemarlow.alm.ALMConfig;
+import dev.anchorlikemarlow.alm.util.BlockStateChecks;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.item.Item;
@@ -9,10 +9,10 @@ import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 
 public final class AnchorContextManager {
-    private final FaltheraVapeConfig config;
+    private final ALMConfig config;
     private AnchorContext activeContext;
 
-    public AnchorContextManager(FaltheraVapeConfig config) {
+    public AnchorContextManager(ALMConfig config) {
         this.config = config;
     }
 

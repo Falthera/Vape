@@ -1,16 +1,16 @@
-package dev.falthera.vape.intent;
+﻿package dev.anchorlikemarlow.alm.intent;
 
-import dev.falthera.vape.FaltheraVapeConfig;
-import dev.falthera.vape.anchor.AnchorContext;
+import dev.anchorlikemarlow.alm.ALMConfig;
+import dev.anchorlikemarlow.alm.anchor.AnchorContext;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.hit.BlockHitResult;
 
 public final class IntentResolver {
-    private final FaltheraVapeConfig config;
+    private final ALMConfig config;
 
-    public IntentResolver(FaltheraVapeConfig config) {
+    public IntentResolver(ALMConfig config) {
         this.config = config;
     }
 

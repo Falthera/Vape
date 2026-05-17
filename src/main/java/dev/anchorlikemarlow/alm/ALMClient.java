@@ -1,11 +1,11 @@
-package dev.falthera.vape;
+﻿package dev.anchorlikemarlow.alm;
 
-import dev.falthera.vape.anchor.AnchorContextManager;
-import dev.falthera.vape.interaction.ClientTickCoordinator;
-import dev.falthera.vape.interaction.InteractionRouter;
-import dev.falthera.vape.network.PacketGuard;
-import dev.falthera.vape.render.AnchorHudOverlay;
-import dev.falthera.vape.intent.IntentResolver;
+import dev.anchorlikemarlow.alm.anchor.AnchorContextManager;
+import dev.anchorlikemarlow.alm.interaction.ClientTickCoordinator;
+import dev.anchorlikemarlow.alm.interaction.InteractionRouter;
+import dev.anchorlikemarlow.alm.network.PacketGuard;
+import dev.anchorlikemarlow.alm.render.AnchorHudOverlay;
+import dev.anchorlikemarlow.alm.intent.IntentResolver;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
@@ -13,12 +13,12 @@ import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class FaltheraVapeClient implements ClientModInitializer {
-    public static final Logger LOGGER = LoggerFactory.getLogger("Falthera VAPE");
+public final class ALMClient implements ClientModInitializer {
+    public static final Logger LOGGER = LoggerFactory.getLogger("AnchorLikeMarlow");
 
-    private static FaltheraVapeClient instance;
+    private static ALMClient instance;
 
-    private final FaltheraVapeConfig config = new FaltheraVapeConfig();
+    private final ALMConfig config = new ALMConfig();
     private final AnchorContextManager anchorContextManager = new AnchorContextManager(config);
     private final PacketGuard packetGuard = new PacketGuard(config);
     private final IntentResolver intentResolver = new IntentResolver(config);
@@ -32,14 +32,14 @@ public final class FaltheraVapeClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(client -> clientTickCoordinator.tick(client));
         HudRenderCallback.EVENT.register((drawContext, tickCounter) -> hudOverlay.render(drawContext));
 
-        LOGGER.info("Falthera VAPE client initialized");
+        LOGGER.info("AnchorLikeMarlow client initialized");
     }
 
-    public static FaltheraVapeClient getInstance() {
+    public static ALMClient getInstance() {
         return instance;
     }
 
-    public FaltheraVapeConfig config() {
+    public ALMConfig config() {
         return config;
     }
 
