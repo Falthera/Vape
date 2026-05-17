@@ -8,11 +8,11 @@ public final class ALMConfig {
     private int contextWindowTicks = 1;
     private float highConfidenceThreshold = 0.78f;
     private float mediumConfidenceThreshold = 0.45f;
-    // number of skipped ticks between heavy processing cycles (0 = process every tick)
-    private int performanceTickSkip = 3;
+    // number of skipped ticks between heavy processing cycles (0 = process every tick for lowest delay)
+    private int performanceTickSkip = 0;
     // fastMode is now always true to enable lowest-latency code paths
     private final boolean fastMode = true;
-    // zero/very-small throttle values to allow immediate synthetic dispatches
+    // zero throttle: absolute minimum delay between synthetic packet dispatches
     private final int fastModePacketThrottleTicks = 0;
     private final int fastModeContextWindowTicks = 0;
     // enable instant HUD rendering when fast mode is active
