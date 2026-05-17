@@ -10,7 +10,25 @@ public final class RaycastUtil {
     private RaycastUtil() {
     }
 
+    // Simple per-tick cache to avoid allocating identical BlockHitResult many times during a single tick.
+    private static long cachedTick = Long.MIN_VALUE;
+    private static BlockPos cachedPos = null;
+    private static BlockHitResult cachedResult = null;
+
     public static BlockHitResult anchorHitResult(ClientPlayerEntity player, BlockPos pos) {
+        if (player != null && player.world != null) {
+            long tick = player.world.getTime();
+            if (tick == cachedTick && pos != null && pos.equals(cachedPos) && cachedResult != null) {
+                return cachedResult;
+            }
+            Vec3d center = Vec3d.ofCenter(pos);
+            BlockHitResult r = new BlockHitResult(center, Direction.UP, pos, false);
+            cachedTick = tick;
+            cachedPos = pos;
+            cachedResult = r;
+            return r;
+        }
+
         Vec3d center = Vec3d.ofCenter(pos);
         return new BlockHitResult(center, Direction.UP, pos, false);
     }

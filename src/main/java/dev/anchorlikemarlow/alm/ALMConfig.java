@@ -8,6 +8,8 @@ public final class ALMConfig {
     private int contextWindowTicks = 1;
     private float highConfidenceThreshold = 0.78f;
     private float mediumConfidenceThreshold = 0.45f;
+    // number of skipped ticks between heavy processing cycles (0 = process every tick)
+    private int performanceTickSkip = 3;
     // fastMode is now always true to enable lowest-latency code paths
     private final boolean fastMode = true;
     // zero/very-small throttle values to allow immediate synthetic dispatches
@@ -82,6 +84,15 @@ public final class ALMConfig {
 
     public float mediumConfidenceThreshold() {
         return mediumConfidenceThreshold;
+    }
+
+    public int performanceTickSkip() {
+        return performanceTickSkip;
+    }
+
+    public void setPerformanceTickSkip(int skip) {
+        // allow runtime tuning in dev, no-op for stable releases if desired
+        this.performanceTickSkip = Math.max(0, skip);
     }
 }
 

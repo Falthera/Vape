@@ -4,7 +4,6 @@ import dev.anchorlikemarlow.alm.anchor.AnchorContextManager;
 import dev.anchorlikemarlow.alm.interaction.ClientTickCoordinator;
 import dev.anchorlikemarlow.alm.interaction.InteractionRouter;
 import dev.anchorlikemarlow.alm.network.PacketGuard;
-import dev.anchorlikemarlow.alm.render.AnchorHudOverlay;
 import dev.anchorlikemarlow.alm.intent.IntentResolver;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -24,13 +23,11 @@ public final class ALMClient implements ClientModInitializer {
     private final IntentResolver intentResolver = new IntentResolver(config);
     private final InteractionRouter interactionRouter = new InteractionRouter(config, anchorContextManager, intentResolver, packetGuard);
     private final ClientTickCoordinator clientTickCoordinator = new ClientTickCoordinator(config, anchorContextManager, packetGuard);
-    private final AnchorHudOverlay hudOverlay = new AnchorHudOverlay(config, anchorContextManager, intentResolver);
 
     @Override
     public void onInitializeClient() {
         instance = this;
         ClientTickEvents.END_CLIENT_TICK.register(client -> clientTickCoordinator.tick(client));
-        HudRenderCallback.EVENT.register((drawContext, tickCounter) -> hudOverlay.render(drawContext));
 
         LOGGER.info("AnchorLikeMarlow client initialized");
     }

@@ -22,6 +22,9 @@ public final class ClientTickCoordinator {
     private final ALMConfig config;
     private final AnchorContextManager anchorContextManager;
     private final PacketGuard packetGuard;
+    // tick gating to reduce per-tick work; runs heavy logic once every (performanceTickSkip+1) ticks
+    private final int performanceTickSkip;
+    private int tickCounter = 0;
 
     private int lastSelectedSlot = -1;
     private Item lastMainHandItem = null;
@@ -46,6 +49,7 @@ public final class ClientTickCoordinator {
         this.config = config;
         this.anchorContextManager = anchorContextManager;
         this.packetGuard = packetGuard;
+        this.performanceTickSkip = config.performanceTickSkip();
     }
 
     public void tick(MinecraftClient client) {
@@ -80,7 +84,7 @@ public final class ClientTickCoordinator {
         int selectedSlot = client.player.getInventory().getSelectedSlot();
         Item currentMainHandItem = client.player.getMainHandStack().getItem();
 
-        // Always detect live slot positions so moved items are handled instantly.
+        // Always detect live slot positions so moved items are handled instantly (cheap).
         detectedAnchorSlot = findHotbarSlot(client.player, Items.RESPAWN_ANCHOR);
         detectedGlowstoneSlot = findHotbarSlot(client.player, Items.GLOWSTONE);
         detectedTotemSlot = findHotbarSlot(client.player, Items.TOTEM_OF_UNDYING);
@@ -91,15 +95,20 @@ public final class ClientTickCoordinator {
             lastMainHandItem = currentMainHandItem;
         }
 
-        anchorContextManager.tick(client.world, client.player, tick);
-        packetGuard.tick(tick);
+        // Gate heavy processing to once every (performanceTickSkip+1) ticks to save allocations and CPU.
+        boolean heavyTick = (tickCounter++ % (performanceTickSkip + 1)) == 0;
 
-        if (pendingStage != STAGE_NONE) {
-            runPendingSequence(client, tick);
+        if (heavyTick) {
+            anchorContextManager.tick(client.world, client.player, tick);
+            packetGuard.tick(tick);
+
+            if (pendingStage != STAGE_NONE) {
+                runPendingSequence(client, tick);
+            }
         }
 
         // Fast automatic sequence: detect pattern (safe vs direct) and assist accordingly
-        if (config.assistEnabled() && config.fastMode()) {
+        if (config.assistEnabled() && config.fastMode() && heavyTick) {
             var context = anchorContextManager.activeContext();
             if (context != null && context.confirmed() && !context.autoSequenceStarted()) {
                 try {
