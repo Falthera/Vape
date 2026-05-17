@@ -1,4 +1,4 @@
-﻿package dev.anchorlikemarlow.alm;
+package dev.anchorlikemarlow.alm;
 
 public final class ALMConfig {
     // Assist is permanently enabled in this build (no keybinds or toggles)
@@ -84,3 +84,4 @@ public final class ALMConfig {
         return mediumConfidenceThreshold;
     }
 }
+

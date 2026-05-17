@@ -1,4 +1,4 @@
-﻿package dev.anchorlikemarlow.alm.render;
+package dev.anchorlikemarlow.alm.render;
 
 import dev.anchorlikemarlow.alm.ALMConfig;
 import dev.anchorlikemarlow.alm.anchor.AnchorContextManager;
@@ -68,3 +68,4 @@ public final class AnchorHudOverlay {
         }
     }
 }
+

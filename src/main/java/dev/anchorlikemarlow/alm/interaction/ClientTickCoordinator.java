@@ -1,4 +1,4 @@
-﻿package dev.anchorlikemarlow.alm.interaction;
+package dev.anchorlikemarlow.alm.interaction;
 
 import dev.anchorlikemarlow.alm.ALMConfig;
 import dev.anchorlikemarlow.alm.ALMClient;
@@ -321,3 +321,4 @@ public final class ClientTickCoordinator {
         }
     }
 }
+

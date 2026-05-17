@@ -1,4 +1,4 @@
-﻿package dev.anchorlikemarlow.alm.mixin;
+package dev.anchorlikemarlow.alm.mixin;
 
 import dev.anchorlikemarlow.alm.ALMClient;
 import dev.anchorlikemarlow.alm.anchor.AnchorContextManager;
@@ -68,3 +68,4 @@ public abstract class ClientPlayerInteractionManagerMixin {
         }
     }
 }
+

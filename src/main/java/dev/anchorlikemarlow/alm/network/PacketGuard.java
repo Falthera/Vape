@@ -1,4 +1,4 @@
-﻿package dev.anchorlikemarlow.alm.network;
+package dev.anchorlikemarlow.alm.network;
 
 import dev.anchorlikemarlow.alm.ALMConfig;
 import net.minecraft.util.math.BlockPos;
@@ -57,3 +57,4 @@ public final class PacketGuard {
         lastDispatchTick = Long.MIN_VALUE;
     }
 }
+

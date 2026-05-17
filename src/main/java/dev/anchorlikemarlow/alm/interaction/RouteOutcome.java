@@ -1,4 +1,4 @@
-﻿    package dev.anchorlikemarlow.alm.interaction;
+    package dev.anchorlikemarlow.alm.interaction;
 
 import net.minecraft.util.ActionResult;
 
@@ -7,3 +7,4 @@ public record RouteOutcome(boolean handled, ActionResult result, String reason) 
         return new RouteOutcome(false, ActionResult.PASS, "pass-through");
     }
 }
+

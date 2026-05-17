@@ -1,4 +1,4 @@
-﻿package dev.anchorlikemarlow.alm.intent;
+package dev.anchorlikemarlow.alm.intent;
 
 import dev.anchorlikemarlow.alm.ALMConfig;
 import dev.anchorlikemarlow.alm.anchor.AnchorContext;
@@ -96,3 +96,4 @@ public final class IntentResolver {
         return Math.max(0.0f, Math.min(1.0f, value));
     }
 }
+

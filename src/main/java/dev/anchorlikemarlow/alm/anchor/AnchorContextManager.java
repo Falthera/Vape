@@ -1,4 +1,4 @@
-﻿package dev.anchorlikemarlow.alm.anchor;
+package dev.anchorlikemarlow.alm.anchor;
 
 import dev.anchorlikemarlow.alm.ALMConfig;
 import dev.anchorlikemarlow.alm.util.BlockStateChecks;
@@ -100,3 +100,4 @@ public final class AnchorContextManager {
         activeContext = null;
     }
 }
+

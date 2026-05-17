@@ -1,4 +1,4 @@
-﻿package dev.anchorlikemarlow.alm.util;
+package dev.anchorlikemarlow.alm.util;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -11,3 +11,4 @@ public final class BlockStateChecks {
         return state != null && state.isOf(Blocks.RESPAWN_ANCHOR);
     }
 }
+

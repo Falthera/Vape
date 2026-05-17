@@ -1,4 +1,4 @@
-﻿package dev.anchorlikemarlow.alm;
+package dev.anchorlikemarlow.alm;
 
 import dev.anchorlikemarlow.alm.anchor.AnchorContextManager;
 import dev.anchorlikemarlow.alm.interaction.ClientTickCoordinator;
@@ -55,3 +55,4 @@ public final class ALMClient implements ClientModInitializer {
         return packetGuard;
     }
 }
+

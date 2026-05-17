@@ -1,4 +1,4 @@
-﻿package dev.anchorlikemarlow.alm.util;
+package dev.anchorlikemarlow.alm.util;
 
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.util.math.BlockPos;
@@ -15,3 +15,4 @@ public final class RaycastUtil {
         return new BlockHitResult(center, Direction.UP, pos, false);
     }
 }
+

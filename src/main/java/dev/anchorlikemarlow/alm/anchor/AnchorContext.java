@@ -1,4 +1,4 @@
-﻿package dev.anchorlikemarlow.alm.anchor;
+package dev.anchorlikemarlow.alm.anchor;
 
 import net.minecraft.util.math.BlockPos;
 
@@ -100,3 +100,4 @@ public final class AnchorContext {
         return Math.max(0.0f, Math.min(1.0f, value));
     }
 }
+
